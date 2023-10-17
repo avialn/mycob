@@ -1,6 +1,6 @@
 version 1.0
 
-#java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run AmplyTax.wdl -i inputs.json -o options.json
+#java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run run.wdl -i inputs_AmplyTax.json -o options.json
 
 #kraken2_db:
 #kraken2_ncbi (archaeal,bacterial and fungal 16S/18S and ITS): https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-metagenomics/ncbi_16s_18s_28s_ITS/ncbi_16s_18s_28s_ITS_kraken2.tar.gz
@@ -20,7 +20,9 @@ version 1.0
 #silva_132 (eukaryotic 18S, v132 & v128): https://zenodo.org/record/1447330
 #pr2 (18S protists, metazoa, fungi and plants): https://github.com/pr2database/pr2database/releases/tag/v5.0.0
 
-import "tasks.wdl" as tasks
+import "./tasks/preprocessing.wdl" as preprocessing
+import "./tasks/kraken2.wdl" as kraken2
+import "./tasks/dada2.wdl" as dada2
 
 workflow AmplyTax {
 
@@ -68,19 +70,19 @@ workflow AmplyTax {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
-    call tasks.FastQC as fastqc_row_R1 {
+    call preprocessing.FastQC as fastqc_row_R1 {
         input:
         fastq = fastq_1,
         docker = "fastqc:4.4"
     }
 
-    call tasks.FastQC as fastqc_row_R2 {
+    call preprocessing.FastQC as fastqc_row_R2 {
         input:
         fastq = fastq_2,
         docker = "fastqc:4.4"
     }
 
-    call tasks.Trimmomatic as trimmomatic {
+    call preprocessing.Trimmomatic as trimmomatic {
         input:
         fastq_1 = fastq_1,
         fastq_2 = fastq_2,
@@ -90,7 +92,7 @@ workflow AmplyTax {
     }
 
     if (cut_primers) {
-        call tasks.Cutadapt as cutadapt_kraken {
+        call preprocessing.Cutadapt as cutadapt_kraken {
             input:
             fastq_1 = trimmomatic.trim_fastq_1,
             fastq_2 = trimmomatic.trim_fastq_2,
@@ -101,7 +103,7 @@ workflow AmplyTax {
         }
     }
 
-    call tasks.HostFilter as host_filter {
+    call preprocessing.HostFilter as host_filter {
         input:
         fastq_1 = if cut_primers then cutadapt_kraken.cut_fastq_1 else trimmomatic.trim_fastq_1,
         fastq_2 = if cut_primers then cutadapt_kraken.cut_fastq_2 else trimmomatic.trim_fastq_2,
@@ -111,7 +113,7 @@ workflow AmplyTax {
         docker = "bowtie2:4.4"
     }
 
-    call tasks.PreprocessingQC as preprocessing_qc {
+    call preprocessing.PreprocessingQC as preprocessing_qc {
         input:
         sample_name = sample_name,
         trim_input_reads = trimmomatic.input_reads_trim,
@@ -123,38 +125,38 @@ workflow AmplyTax {
         docker = "python:4.4"
     }
 
-    call tasks.FastQC as fastqc_trimed_R1 {
+    call preprocessing.FastQC as fastqc_trimed_R1 {
         input:
         fastq = host_filter.host_filtered_fastq_1,
         docker = "fastqc:4.4"
     }
 
-    call tasks.FastQC as fastqc_trimed_R2 {
+    call preprocessing.FastQC as fastqc_trimed_R2 {
         input:
         fastq = host_filter.host_filtered_fastq_2,
         docker = "fastqc:4.4"
     }
 
-    call tasks.Kraken2 as kraken2 {
+    call kraken2.Kraken2 as kraken2 {
         input:
         fastq_1 = host_filter.host_filtered_fastq_1,
         fastq_2 = host_filter.host_filtered_fastq_2,
         sample_name = sample_name,
-        kraken2_classifier = kraken2_16s,
+        kraken2_classifier = kraken2_ncbi,
         threads = threads,
         docker = "staphb/kraken2:latest"
     }
 
-    call tasks.Bracken as bracken {
+    call kraken2.Bracken as bracken {
         input:
         sample_name = sample_name,
         kraken_report = kraken2.report_txt,
-        kraken2_classifier = kraken2_16s,
+        kraken2_classifier = kraken2_ncbi,
         level = kraken_level,
         docker = "nanozoo/bracken:2.8--dcb3e47"
     }
 
-    call tasks.Krona as krona_kraken {
+    call kraken2.Krona as krona_kraken {
         input:
         sample_name = sample_name,
         report = kraken2.report_txt,
@@ -162,7 +164,7 @@ workflow AmplyTax {
     }
 
     if (cut_primers) {
-        call tasks.Cutadapt as cutadapt_dada2 {
+        call preprocessing.Cutadapt as cutadapt_dada2 {
             input:
             fastq_1 = fastq_1,
             fastq_2 = fastq_2,
@@ -174,7 +176,7 @@ workflow AmplyTax {
     }
 
     if (microb_16s) {
-        call tasks.Dada2 as dada2_microb_16s {
+        call dada2.Dada2 as dada2_microb_16s {
             input:
             fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
             fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
@@ -189,7 +191,7 @@ workflow AmplyTax {
     }
 
     if (fungi_18s) {
-        call tasks.Dada2 as dada2_fungi_18s  {
+        call dada2.Dada2 as dada2_fungi_18s  {
             input:
             fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
             fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
@@ -204,7 +206,7 @@ workflow AmplyTax {
     }
 
     if (fungi_its) {
-        call tasks.Dada2 as dada2_fungi_its  {
+        call dada2.Dada2 as dada2_fungi_its  {
             input:
             fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
             fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
