@@ -1,0 +1,5 @@
+{
+  "VirGenotyping.sample_name" : "10VG_S14",
+  "VirGenotyping.fastq_1" : "/home/admin/MiSeq/10VG_S14_L001_R1_001.fastq.gz",
+  "VirGenotyping.fastq_2" : "/home/admin/MiSeq/10VG_S14_L001_R1_001.fastq.gz"
+}
