@@ -55,7 +55,7 @@ workflow processing {
             minlen = 36,
             compression_level = compression_level,
             max_retries = max_retries,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
 
         # call Utils.trimmomatic as trimmomatic   {
