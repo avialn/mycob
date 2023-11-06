@@ -12,7 +12,7 @@ task trimm {
         String docker
     }
 
-	command <<<
+    command <<<
 		set -e
 		/opt/fastp/fastp \
 			-i ${fastq_1} \
