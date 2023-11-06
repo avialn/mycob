@@ -41,10 +41,9 @@ workflow VirGenotyping {
         File reference_fasta_cov = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/CoV/reference/consensus.fasta"
         File reference_fasta_metapneumo = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta"
         File reference_fasta_flu = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/FLU/reference/consensus.fasta"
+        Int lines_number = length(Files)
     }
 
-
-    Int lines_number = length(Files)
 
 	scatter (i in range(length(Files))) {
 
