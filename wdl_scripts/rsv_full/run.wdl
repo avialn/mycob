@@ -130,8 +130,7 @@ workflow VirGenotyping {
         cut_both_surviving = if defined(cutadapt.both_surviving_cut) then cutadapt.both_surviving_cut else "no primers were cut",
         host_input_reads = host_filter.input_reads_host,
         host_both_surviving = host_filter.both_surviving_host,
-        docker = cr.yandex/crpl2lv1lkr7g21e6q8g/python:3
-
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
     }
 
     call preprocessing.FastQC as fastqc_trimed_R1 {
