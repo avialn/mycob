@@ -47,18 +47,6 @@ workflow VirGenotyping {
 
     scatter (i in range(length(Files))) {
 
-        call preprocessing.FastQC as fastqc_raw_R1 {
-            input:
-            fastq = Files[i][0],
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-        }
-
-        call preprocessing.FastQC as fastqc_raw_R2 {
-            input:
-            fastq = Files[i][1],
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-        }
-
 		call Utils.trimm as trimm {
 			input:
 				fastq_1 = Files[i][0],
@@ -87,6 +75,19 @@ workflow VirGenotyping {
     Array[File] trimmed_R2 = flatten(trimm.R2_file)
     String fastq_1 = trimmed_R1[0]
     String fastq_2 = trimmed_R1[1]
+
+    call preprocessing.FastQC as fastqc_raw_R1 {
+        input:
+        fastq = Files[0][0],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
+
+    call preprocessing.FastQC as fastqc_raw_R2 {
+        input:
+        fastq = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
+
 
     call preprocessing.Trimmomatic as trimmomatic {
         input:
