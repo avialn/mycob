@@ -68,7 +68,7 @@ workflow VirGenotyping {
 				sample_id = SampleID,
                 minlen = 36,
 				compression_level = compression_level,
-				max_retries = max_retries
+				max_retries = max_retries,
                 docker = "cr.yandex/crp0pd4faec3e1qvam30/fastp:0.23.4"
 		}
 
