@@ -45,20 +45,19 @@ workflow VirGenotyping {
     }
 
 
-    scatter (i in range(length(Files))) {
 
-		call Utils.trimm as trimm {
-			input:
-				fastq_1 = Files[i][0],
-				fastq_2 = Files[i][1],
-                lines_number = lines_number,
-				sample_id = SampleID,
-                minlen = 36,
-				compression_level = compression_level,
-				max_retries = max_retries,
-                docker = "cr.yandex/crp0pd4faec3e1qvam30/fastp:0.23.4"
-		}
+    call Utils.trimm as trimm {
+        input:
+            fastq_1 = Files[0][0],
+            fastq_2 = Files[0][1],
+            lines_number = lines_number,
+            sample_id = SampleID,
+            minlen = 36,
+            compression_level = compression_level,
+            max_retries = max_retries,
+            docker = "cr.yandex/crp0pd4faec3e1qvam30/fastp:0.23.4"
     }
+
         # call Utils.trimmomatic as trimmomatic   {
         #         input:
         #             fastq_1 = trimm.R1_file,
@@ -71,10 +70,10 @@ workflow VirGenotyping {
         #             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
         #     }
 
-    Array[File] trimmed_R1 = flatten(trimm.R1_file)
-    Array[File] trimmed_R2 = flatten(trimm.R2_file)
-    String fastq_1 = trimmed_R1[0]
-    String fastq_2 = trimmed_R1[1]
+#    Array[File] trimmed_R1 = flatten(trimm.R1_file)
+#    Array[File] trimmed_R2 = flatten(trimm.R2_file)
+    String fastq_1 = trimm.R1_file
+    String fastq_2 = trimm.R2_file
 
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
