@@ -15,13 +15,13 @@ task trimm {
     command <<<
         set -e
         /opt/fastp/fastp \
-            -i ${fastq_1} \
-            -I ${fastq_2} \
+            -i ~{fastq_1} \
+            -I ~{fastq_2} \
             --out1 outR1.fastq.gz \
             --out2 outR2.fastq.gz \
             --qualified_quality_phred 15 \
             --unqualified_percent_limit 40 \
-            --length_required ${minlen} \
+            --length_required ~{minlen} \
             --detect_adapter_for_pe \
             --cut_tail \
             --cut_tail_window_size 6 \
