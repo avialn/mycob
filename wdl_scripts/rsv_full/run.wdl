@@ -76,13 +76,13 @@ workflow VirGenotyping {
     String fastq_1 = trimmed_R1[0]
     String fastq_2 = trimmed_R1[1]
 
-    call preprocessing.FastQC as fastqc_raw_R1 {
+    call preprocessing.FastQC as fastqc_row_R1 {
         input:
         fastq = Files[0][0],
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
-    call preprocessing.FastQC as fastqc_raw_R2 {
+    call preprocessing.FastQC as fastqc_row_R2 {
         input:
         fastq = Files[0][1],
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
