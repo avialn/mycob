@@ -8,7 +8,7 @@ import "irma.wdl" as irma
 import "nextclade.wdl" as nextclade
 import "yandex_utilities.wdl" as Utils
 
-workflow VirGenotyping {
+workflow processing {
 
     input {
         Array[Array[String]] Files

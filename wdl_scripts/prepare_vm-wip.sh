@@ -60,15 +60,15 @@ echo "NBWA=$NBWA" >> /home/cromwell/cpus.conf
 echo $FILES | jq --raw-output '.[] | .[]' | xargs -L1 -I'{}' aws --endpoint-url=https://storage.yandexcloud.net s3 cp {} /home/cromwell/fastq/ |& tee -a /home/cromwell/aws.log
 jq --arg key0 'task-id' --arg value0 ${TASK_ID} --arg key1 'attempt' --arg value1 ${ATTEMPT} '. | .[$key0]=$value0 | .[$key1]=$value1' <<<'{}' > /home/cromwell/labels.json
 export LOCAL_FILES=$(echo $FILES | jq 'map(. | map(. | sub("s3:\/\/mycob-userdata"; "\/home\/cromwell")))' | jq -c 'map(. | map(. | sub(env.USER_ID; "fastq")))')
-jq --arg key0 'human.Files' --argjson value0 ${LOCAL_FILES} \
-	--arg key1 'human.nCPU' --arg value1 $NCPU \
-	--arg key2 'human.Panel' --arg value2 ${PANEL} \
-	--arg key3 'human.TaskID' --arg value3 ${TASK_ID} \
-	--arg key4 'human.Attempt' --arg value4 ${ATTEMPT} \
-	--arg key5 'human.Build' --arg value5 ${BUILD} \
-	--arg key6 'human.TypeHS' --arg value6 ${TYPE_HS} \
-	--arg key7 'human.TypeVC' --arg value7 ${TYPE_VC} \
-   --arg key8 'human.nBWA' --arg value8 ${NBWA} \
+jq --arg key0 'processing.Files' --argjson value0 ${LOCAL_FILES} \
+	--arg key1 'processing.nCPU' --arg value1 $NCPU \
+	--arg key2 'processing.Panel' --arg value2 ${PANEL} \
+	--arg key3 'processing.TaskID' --arg value3 ${TASK_ID} \
+	--arg key4 'processing.Attempt' --arg value4 ${ATTEMPT} \
+	--arg key5 'processing.Build' --arg value5 ${BUILD} \
+	--arg key6 'processing.TypeHS' --arg value6 ${TYPE_HS} \
+	--arg key7 'processinghuman.TypeVC' --arg value7 ${TYPE_VC} \
+   --arg key8 'processing.nBWA' --arg value8 ${NBWA} \
 	'. | .[$key0]=$value0 | .[$key1]=$value1 | .[$key2]=$value2 | .[$key3]=$value3 | .[$key4]=$value4 | .[$key5]=$value5 | .[$key6]=$value6 | .[$key7]=$value7 | .[$key8]=$value8' <<<'{}' > /home/cromwell/local_inputs.json
 jq --slurp '.[0] * .[1]' /home/cromwell/local_inputs.json /home/cromwell/yandex_inputs.json > /home/cromwell/inputs.json
 
