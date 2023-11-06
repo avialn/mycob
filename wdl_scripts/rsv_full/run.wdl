@@ -86,8 +86,8 @@ workflow VirGenotyping {
 
     Array[File] trimmed_R1 = flatten(trimm.R1_file)
     Array[File] trimmed_R2 = flatten(trimm.R2_file)
-    fastq_1 = trimmed_R1[0]
-    fastq_2 = trimmed_R1[1]
+    String fastq_1 = trimmed_R1[0]
+    String fastq_2 = trimmed_R1[1]
 
     call preprocessing.Trimmomatic as trimmomatic {
         input:
