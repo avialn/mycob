@@ -32,15 +32,15 @@ mkdir -p /home/cromwell/fastq
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/rsv_full/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/rsv_full/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/rsv_full/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/rsv_full/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/rsv_full/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/rsv_full/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
 zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl
 
 mkdir -p /home/cromwell/mycob-bed
