@@ -21,26 +21,26 @@ workflow processing {
         String SampleName = TableID
         String sample_name = SampleName
         Boolean cut_primers = false
-        File? primer_left = "/home/admin/cromwell_all/cut_primers/left_primers.fasta"
-        File? primer_right = "/home/admin/cromwell_all/cut_primers/right_primers.fasta"
+        File? primer_left = "/home/cromwell/rsv_full/left_primers.fasta"
+        File? primer_right = "/home/cromwell/rsv_full/right_primers.fasta"
         Boolean transcriptome_filtering = true # false will take index_genome, true - index_transcriptome
-        File index_genome = "/home/admin/db/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar"
-        File index_transcriptome = "/home/admin/db/human_bowtie2_index/GRCh38_transcriptome.bowtie2.tar"
-        File kraken2_standard_8gb = "/home/admin/db/kraken2/k2_standard_08gb_20231009.tar.gz"
-        File kraken2_virus = "/home/admin/db/kraken2/k2_viral_20231009.tar.gz"
+        File index_genome = "/home/cromwell/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar"
+        File index_transcriptome = "/home/cromwell/rsv_full/human_bowtie2_index/GRCh38_transcriptome.bowtie2.tar"
+        File kraken2_standard_8gb = "/home/cromwell/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz"
+        File kraken2_virus = "/home/cromwell/rsv_full/kraken2/k2_viral_20231009.tar.gz"
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
         Int threads = 8
-        File reference_fasta_measles = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/MEASLES/reference/consensus.fasta"
-        File reference_fasta_adeno = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/ADENO/reference/consensus.fasta"
-        File reference_fasta_pneumo = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/PNEUMO/reference/consensus.fasta"
-        File reference_fasta_boca = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/BOCA/reference/consensus.fasta"
-        File reference_fasta_corona = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/CORONA/reference/consensus.fasta"
-        File reference_fasta_respiro = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/RESPIRO/reference/consensus.fasta"
-        File reference_fasta_rhino = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/RHINO/reference/consensus.fasta"
-        File reference_fasta_rubula = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/RUBULA/reference/consensus.fasta"
-        File reference_fasta_cov = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/CoV/reference/consensus.fasta"
-        File reference_fasta_metapneumo = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta"
-        File reference_fasta_flu = "/home/admin/cromwell_all/docker_images/irma/irma/flu-amd/IRMA_RES/modules/FLU/reference/consensus.fasta"
+        File reference_fasta_measles = "/home/cromwell/rsv_full/IRMA_RES/modules/MEASLES/reference/consensus.fasta"
+        File reference_fasta_adeno = "/home/cromwell/rsv_full/IRMA_RES/modules/ADENO/reference/consensus.fasta"
+        File reference_fasta_pneumo = "/home/cromwell/rsv_full/IRMA_RES/modules/PNEUMO/reference/consensus.fasta"
+        File reference_fasta_boca = "/home/cromwell/rsv_full/IRMA_RES/modules/BOCA/reference/consensus.fasta"
+        File reference_fasta_corona = "/home/cromwell/rsv_full/IRMA_RES/modules/CORONA/reference/consensus.fasta"
+        File reference_fasta_respiro = "/home/cromwell/rsv_full/IRMA_RES/modules/RESPIRO/reference/consensus.fasta"
+        File reference_fasta_rhino = "/home/cromwell/rsv_full/IRMA_RES/modules/RHINO/reference/consensus.fasta"
+        File reference_fasta_rubula = "/home/cromwell/rsv_full/IRMA_RES/modules/RUBULA/reference/consensus.fasta"
+        File reference_fasta_cov = "/home/cromwell/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta"
+        File reference_fasta_metapneumo = "/home/cromwell/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta"
+        File reference_fasta_flu = "/home/cromwell/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta"
         Int lines_number = length(Files)
     }
 
@@ -630,7 +630,7 @@ workflow processing {
             HA_tsv = nextclade_flu.HA_nextclade,
             NA_tsv = nextclade_flu.NA_nextclade,
             report = report_flu.report,
-            antigenic_frame = "/home/admin/cromwell_flu/inputs/VD_6/antigenic_frame.txt",
+            antigenic_frame = "/home/cromwell/rsv_full/antigenic_frame.txt",
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
     }
