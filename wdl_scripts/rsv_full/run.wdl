@@ -45,7 +45,7 @@ workflow VirGenotyping {
     }
 
 
-	scatter (i in range(length(Files))) {
+    scatter (i in range(length(Files))) {
 
         call preprocessing.FastQC as fastqc_raw_R1 {
             input:
