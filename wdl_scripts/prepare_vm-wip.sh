@@ -43,11 +43,39 @@ cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_options.json /home/cromwell/op
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
 zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl
 
-mkdir -p /home/cromwell/mycob-bed
-mkdir -p /home/cromwell/mycob-bed/${BUILD}
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-bed/${BUILD}/${PANEL}.interval_list /home/cromwell/mycob-bed/${BUILD} |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-bed/${BUILD}/${PANEL}.bed /home/cromwell/mycob-bed/${BUILD} |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-bed/${BUILD}/${PANEL}.cov /home/cromwell/mycob-bed/${BUILD} |& tee -a /home/cromwell/aws.log
+mkdir -p /home/cromwell/mycob-ref
+mkdir -p /home/cromwell/mycob-bed/rsv_full
+mkdir -p /home/cromwell/mycob-bed/rsv_full/human_bowtie2_index
+mkdir -p /home/cromwell/mycob-bed/rsv_full/kraken2
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/MEASLES/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/ADENO/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/PNEUMO/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/BOCA/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/CORONA/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/RESPIRO/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/RHINO/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/RUBULA/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/CoV/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/METAPMEUMO/reference
+mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/FLU/reference
+
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/left_primers.fasta /home/cromwell/mycob-ref/rsv_full |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/right_primers.fasta /home/cromwell/mycob-ref/rsv_full |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar /home/cromwell/mycob-ref/rsv_full/human_bowtie2_index |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/human_bowtie2_index/GRCh38_transcriptome.bowtie2.tar /home/cromwell/mycob-ref/rsv_full/human_bowtie2_index |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz /home/cromwell/mycob-ref/rsv_full/kraken2 |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/kraken2/k2_viral_20231009.tar.gz /home/cromwell/mycob-ref/rsv_full/kraken2 |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/MEASLES/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/MEASLES/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/ADENO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/ADENO/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/PNEUMO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/PNEUMO/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/BOCA/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/BOCA/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/CORONA/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CORONA/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/RESPIRO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/RESPIRO/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/RHINO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/RHINO/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/RUBULA/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/RUBULA/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference |& tee -a /home/cromwell/aws.log
 mkdir -p /home/cromwell/humandb
 #sudo mount /home/cromwell/hg38-humandb.sqsh /home/cromwell/humandb -t squashfs -o loop
 
