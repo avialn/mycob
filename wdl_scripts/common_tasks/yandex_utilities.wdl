@@ -37,7 +37,7 @@ task trimm {
 	}
 	output {
 		File R1_file = "outR1.fastq.gz"
-		File R2_file = "*outR2.fastq.gz"
+		File R2_file = "outR2.fastq.gz"
 		File fastp_json = "fastp.json"
 		File fastp_html = "fastp.html"
     }
