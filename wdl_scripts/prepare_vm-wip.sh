@@ -32,7 +32,7 @@ mkdir -p /home/cromwell/fastq
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/rsv_full/human_dnaseq.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
@@ -98,7 +98,7 @@ do
    fi
 done
 
-SUBMIT=$(curl --silent -X POST "http://127.0.0.1:8000/api/workflows/v1" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "workflowSource=@/home/cromwell/human_dnaseq.wdl" -F "workflowInputs=@/home/cromwell/inputs.json;type=application/json" -F "workflowOptions=@/home/cromwell/options.json;type=application/json" -F "labels=@/home/cromwell/labels.json;type=application/json" -F "workflowDependencies=@/home/cromwell/imports.zip;type=application/x-zip-compressed")
+SUBMIT=$(curl --silent -X POST "http://127.0.0.1:8000/api/workflows/v1" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "workflowSource=@/home/cromwell/run.wdl" -F "workflowInputs=@/home/cromwell/inputs.json;type=application/json" -F "workflowOptions=@/home/cromwell/options.json;type=application/json" -F "labels=@/home/cromwell/labels.json;type=application/json" -F "workflowDependencies=@/home/cromwell/imports.zip;type=application/x-zip-compressed")
 echo "Submiting:" ${SUBMIT} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 WORKFLOW_ID=$(echo ${SUBMIT} | jq --raw-output ".id")
 echo "Workflow:" ${WORKFLOW_ID} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
