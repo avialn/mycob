@@ -150,7 +150,7 @@ workflow processing {
         fastq_2 = host_filter.host_filtered_fastq_2,
         sample_name = sample_name,
         kraken2_classifier = kraken2_standard_8gb,
-        threads = threads,
+        threads = 1,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
     }
 
@@ -176,7 +176,7 @@ workflow processing {
         fastq_2 = host_filter.host_filtered_fastq_2,
         sample_name = sample_name,
         kraken2_classifier = kraken2_virus,
-        threads = threads,
+        threads = 1,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
     }
 
