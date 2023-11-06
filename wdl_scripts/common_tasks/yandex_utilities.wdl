@@ -32,7 +32,7 @@ task trimm {
 			--thread 16
 	>>>
 	runtime {
-		docker: "${docker}"
+		docker: "~{docker}"
 		maxRetries: max_retries
 	}
 	output {
