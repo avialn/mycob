@@ -102,8 +102,8 @@ workflow VirGenotyping {
     if (cut_primers) {
         call preprocessing.Cutadapt as cutadapt {
             input:
-            fastq_1 = trim_fastq_1,
-            fastq_2 = trim_fastq_2,
+            fastq_1 = trimmomatic.trim_fastq_1,
+            fastq_2 = trimmomatic.trim_fastq_2,
             sample_name = sample_name,
             primer_left = primer_left,
             primer_right = primer_right,
