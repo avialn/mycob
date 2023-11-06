@@ -1,0 +1,6 @@
+{
+    "final_workflow_log_dir": "/home/cromwell/mycob-cromwell-logs/wf_logs",
+    "final_call_logs_dir": "/home/cromwell/mycob-cromwell-logs/call_logs",
+    "final_workflow_outputs_dir": "/home/cromwell/mycob-cromwell-outputs",
+    "workflow_failure_mode": "ContinueWhilePossible"
+}
