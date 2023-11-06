@@ -71,7 +71,7 @@ workflow VirGenotyping {
 				max_retries = max_retries,
                 docker = "cr.yandex/crp0pd4faec3e1qvam30/fastp:0.23.4"
 		}
-
+    }
         # call Utils.trimmomatic as trimmomatic   {
         #         input:
         #             fastq_1 = trimm.R1_file,
