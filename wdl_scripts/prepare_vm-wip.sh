@@ -15,37 +15,39 @@ VER=${BUILD:2:2}
 export AWS_ACCESS_KEY_ID=YCAJETbuUo6peFsb89GqhV-CH
 export AWS_SECRET_ACCESS_KEY=YCMzfRDYoDO9hAzTVZgbSblGjHdftk-WxmZSYsqc
 export AWS_DEFAULT_REGION=ru-central1
-#touch /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-#watch -n 10 touch /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log &>/dev/null &
-echo "UserID: ${USER_ID}" > /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "TaskID: ${TASK_ID}" >> /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "Attempt: ${ATTEMPT}" >> /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "Panel: ${PANEL}" >> /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "Build: ${BUILD}" >> /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "Type HS: ${TYPE_HS}" >> /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "Type VC: ${TYPE_VC}" >> /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+#touch /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+#watch -n 10 touch /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log &>/dev/null &
+echo "UserID: ${USER_ID}" > /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "TaskID: ${TASK_ID}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Attempt: ${ATTEMPT}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Panel: ${PANEL}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Build: ${BUILD}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Type HS: ${TYPE_HS}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Type VC: ${TYPE_VC}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 mkdir -p /home/cromwell/fastq
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/human_dnaseq.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/yandex_fastq_processing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/yandex_split_large_rg.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/human_dnaseq.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/yandex_fastq_processing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/yandex_split_large_rg.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/seq24/human_dnaseq/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-zip --junk-paths /home/cromwell/imports.zip /home/cromwell/yandex_fastq_processing.wdl /home/cromwell/yandex_split_large_rg.wdl /home/cromwell/yandex_utilities.wdl
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/human_dnaseq.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_fastq_processing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_split_large_rg.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/rsv_full/human_dnaseq.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/rsv_full/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/rsv_full/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/rsv_full/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
+zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl
 
-mkdir -p /home/cromwell/ngs24-bed
-mkdir -p /home/cromwell/ngs24-bed/${BUILD}
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-bed/${BUILD}/${PANEL}.interval_list /home/cromwell/ngs24-bed/${BUILD} |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-bed/${BUILD}/${PANEL}.bed /home/cromwell/ngs24-bed/${BUILD} |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://ngs24-bed/${BUILD}/${PANEL}.cov /home/cromwell/ngs24-bed/${BUILD} |& tee -a /home/cromwell/aws.log
+mkdir -p /home/cromwell/mycob-bed
+mkdir -p /home/cromwell/mycob-bed/${BUILD}
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-bed/${BUILD}/${PANEL}.interval_list /home/cromwell/mycob-bed/${BUILD} |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-bed/${BUILD}/${PANEL}.bed /home/cromwell/mycob-bed/${BUILD} |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-bed/${BUILD}/${PANEL}.cov /home/cromwell/mycob-bed/${BUILD} |& tee -a /home/cromwell/aws.log
 mkdir -p /home/cromwell/humandb
 #sudo mount /home/cromwell/hg38-humandb.sqsh /home/cromwell/humandb -t squashfs -o loop
 
@@ -57,7 +59,7 @@ echo "NJOB=$NJOB" >> /home/cromwell/cpus.conf
 echo "NBWA=$NBWA" >> /home/cromwell/cpus.conf
 echo $FILES | jq --raw-output '.[] | .[]' | xargs -L1 -I'{}' aws --endpoint-url=https://storage.yandexcloud.net s3 cp {} /home/cromwell/fastq/ |& tee -a /home/cromwell/aws.log
 jq --arg key0 'task-id' --arg value0 ${TASK_ID} --arg key1 'attempt' --arg value1 ${ATTEMPT} '. | .[$key0]=$value0 | .[$key1]=$value1' <<<'{}' > /home/cromwell/labels.json
-export LOCAL_FILES=$(echo $FILES | jq 'map(. | map(. | sub("s3:\/\/ngs24-userdata"; "\/home\/cromwell")))' | jq -c 'map(. | map(. | sub(env.USER_ID; "fastq")))')
+export LOCAL_FILES=$(echo $FILES | jq 'map(. | map(. | sub("s3:\/\/mycob-userdata"; "\/home\/cromwell")))' | jq -c 'map(. | map(. | sub(env.USER_ID; "fastq")))')
 jq --arg key0 'human.Files' --argjson value0 ${LOCAL_FILES} \
 	--arg key1 'human.nCPU' --arg value1 $NCPU \
 	--arg key2 'human.Panel' --arg value2 ${PANEL} \
@@ -71,16 +73,16 @@ jq --arg key0 'human.Files' --argjson value0 ${LOCAL_FILES} \
 jq --slurp '.[0] * .[1]' /home/cromwell/local_inputs.json /home/cromwell/yandex_inputs.json > /home/cromwell/inputs.json
 
 sudo systemctl start env-cromwell.service
-#time lbzip2 -n 8 -vv -dc /home/cromwell/ngs24-ref/${BUILD}/Homo_sapiens_assembly${VER}.fasta.64.bwt.bz2 > /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.bwt
-#mv /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.bwt /home/cromwell/ngs24-ref/${BUILD}/ &
-#time lbzip2 -n 8 -vv -dc /home/cromwell/ngs24-ref/${BUILD}/Homo_sapiens_assembly${VER}.fasta.64.sa.bz2 > /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.sa
-#mv /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.sa /home/cromwell/ngs24-ref/${BUILD}/ &
-#time lbzip2 -n 8 -vv -dc /home/cromwell/ngs24-ref/${BUILD}/Homo_sapiens_assembly${VER}.fasta.bz2 > /dev/shm/Homo_sapiens_assembly${VER}.fasta
-#mv /dev/shm/Homo_sapiens_assembly${VER}.fasta /home/cromwell/ngs24-ref/${BUILD}/ &
+#time lbzip2 -n 8 -vv -dc /home/cromwell/mycob-ref/${BUILD}/Homo_sapiens_assembly${VER}.fasta.64.bwt.bz2 > /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.bwt
+#mv /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.bwt /home/cromwell/mycob-ref/${BUILD}/ &
+#time lbzip2 -n 8 -vv -dc /home/cromwell/mycob-ref/${BUILD}/Homo_sapiens_assembly${VER}.fasta.64.sa.bz2 > /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.sa
+#mv /dev/shm/Homo_sapiens_assembly${VER}.fasta.64.sa /home/cromwell/mycob-ref/${BUILD}/ &
+#time lbzip2 -n 8 -vv -dc /home/cromwell/mycob-ref/${BUILD}/Homo_sapiens_assembly${VER}.fasta.bz2 > /dev/shm/Homo_sapiens_assembly${VER}.fasta
+#mv /dev/shm/Homo_sapiens_assembly${VER}.fasta /home/cromwell/mycob-ref/${BUILD}/ &
 
 sudo sysctl --system
 cd /home/cromwell
-#/usr/bin/java -Xms2000m -Xmx6000m -jar -Dconfig.file=/home/cromwell/yandex.conf /home/cromwell/cromwell-58.jar run -o /home/cromwell/options.json -i /home/cromwell/inputs.json -l /home/cromwell/labels.json -m /home/cromwell/metadata.json --imports /home/cromwell/imports.zip /home/cromwell/human_dnaseq.wdl |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+#/usr/bin/java -Xms2000m -Xmx6000m -jar -Dconfig.file=/home/cromwell/yandex.conf /home/cromwell/cromwell-58.jar run -o /home/cromwell/options.json -i /home/cromwell/inputs.json -l /home/cromwell/labels.json -m /home/cromwell/metadata.json --imports /home/cromwell/imports.zip /home/cromwell/human_dnaseq.wdl |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 sudo systemctl start env-docker-gatk-cnn.service
 #sudo systemctl start env-snpeff.service
 
@@ -88,7 +90,7 @@ while :
 do
    VERSION=$(curl --silent -X GET "http://127.0.0.1:8000/engine/v1/version" -H "accept: application/json" | jq --raw-output '.cromwell')
    DATE=$(date)
-   echo ${DATE}   ${VERSION} |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+   echo ${DATE}   ${VERSION} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
    sleep 10
    if [ "${VERSION}" = "65" ]
    then
@@ -97,20 +99,20 @@ do
 done
 
 SUBMIT=$(curl --silent -X POST "http://127.0.0.1:8000/api/workflows/v1" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "workflowSource=@/home/cromwell/human_dnaseq.wdl" -F "workflowInputs=@/home/cromwell/inputs.json;type=application/json" -F "workflowOptions=@/home/cromwell/options.json;type=application/json" -F "labels=@/home/cromwell/labels.json;type=application/json" -F "workflowDependencies=@/home/cromwell/imports.zip;type=application/x-zip-compressed")
-echo "Submiting:" ${SUBMIT} |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Submiting:" ${SUBMIT} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 WORKFLOW_ID=$(echo ${SUBMIT} | jq --raw-output ".id")
-echo "Workflow:" ${WORKFLOW_ID} |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-echo "VM name:" ${VM_NAME} |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "Workflow:" ${WORKFLOW_ID} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+echo "VM name:" ${VM_NAME} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 echo ${WORKFLOW_ID} > /home/cromwell/workflow.${TASK_ID}.${ATTEMPT}
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/workflow.${TASK_ID}.${ATTEMPT} s3://ngs24-cromwell-outputs/workflow/workflow.${TASK_ID}.${ATTEMPT} |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/workflow.${TASK_ID}.${ATTEMPT} s3://mycob-cromwell-outputs/workflow/workflow.${TASK_ID}.${ATTEMPT} |& tee -a /home/cromwell/aws.log
 #CALLBACK=$(curl --silent -X GET "https://seq24.ru/api/yandex_cromwell/id_set/${VM_NAME}/${WORKFLOW_ID}")
-#echo "Callback:" ${CALLBACK} |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+#echo "Callback:" ${CALLBACK} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 
 while :
 do
    STATUS=$(curl --silent -X GET "http://127.0.0.1:8000/api/workflows/v1/${WORKFLOW_ID}/metadata?includeKey=status" -H "accept: application/json" | jq --raw-output '.status')
    DATE=$(date)
-   echo ${DATE}   ${STATUS} |& tee -a /s3/ngs24-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
+   echo ${DATE}   ${STATUS} |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
    sleep 30
    if [ "${STATUS}" = "Running" ] && [ "${WORKFLOW_TAILED}" != 1 ]
    then
@@ -121,7 +123,7 @@ do
    then
       echo ${STATUS} > /home/cromwell/status.${WORKFLOW_ID}
    fi
-#   aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/status.${WORKFLOW_ID} s3://ngs24-cromwell-outputs/status/status.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
+#   aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/status.${WORKFLOW_ID} s3://mycob-cromwell-outputs/status/status.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
    if [ "${STATUS}" = "Succeeded" ] || [ "${STATUS}" = "Failed" ] || [ "${STATUS}" = "Aborted" ]
    then
 	   echo ${STATUS} > /home/cromwell/status.${WORKFLOW_ID}
@@ -133,14 +135,14 @@ done
 curl --silent -o /home/cromwell/metadata.${WORKFLOW_ID} -X GET "http://127.0.0.1:8000/api/workflows/v1/${WORKFLOW_ID}/metadata" -H "accept: application/json"
 curl --silent -o /home/cromwell/outputs.${WORKFLOW_ID} -X GET "http://127.0.0.1:8000/api/workflows/v1/${WORKFLOW_ID}/outputs" -H "accept: application/json"
 curl --silent -o /home/cromwell/timing.${WORKFLOW_ID}.html -X GET "http://127.0.0.1:8000/api/workflows/v1/${WORKFLOW_ID}/timing" -H "accept: application/json"
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/metadata.${WORKFLOW_ID} s3://ngs24-cromwell-metadata/metadata.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/outputs.${WORKFLOW_ID} s3://ngs24-cromwell-outputs/outputs/outputs.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp $(cat "/home/cromwell/outputs.${WORKFLOW_ID}" | jq --raw-output '.outputs."human.full_tsv"') s3://ngs24-temp/${WORKFLOW_ID}.tsv.gz |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp $(cat "/home/cromwell/outputs.${WORKFLOW_ID}" | jq --raw-output '.outputs."human.region_coverage"') s3://ngs24-temp/${WORKFLOW_ID}_coverage.regions.bed.gz |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp $(cat "/home/cromwell/outputs.${WORKFLOW_ID}" | jq --raw-output '.outputs."human.bp_coverage"') s3://ngs24-temp/${WORKFLOW_ID}_coverage.bp.bed.gz |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/ngs24-cromwell-outputs/ s3://ngs24-cromwell-outputs/ --recursive |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/ngs24-cromwell-logs/wf_logs/ s3://ngs24-cromwell-logs/wf_logs/ --recursive |& tee -a /home/cromwell/aws.log
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/ngs24-cromwell-logs/call_logs/ s3://ngs24-cromwell-logs/call_logs/ --recursive |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/metadata.${WORKFLOW_ID} s3://mycob-cromwell-metadata/metadata.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/outputs.${WORKFLOW_ID} s3://mycob-cromwell-outputs/outputs/outputs.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp $(cat "/home/cromwell/outputs.${WORKFLOW_ID}" | jq --raw-output '.outputs."human.full_tsv"') s3://mycob-temp/${WORKFLOW_ID}.tsv.gz |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp $(cat "/home/cromwell/outputs.${WORKFLOW_ID}" | jq --raw-output '.outputs."human.region_coverage"') s3://mycob-temp/${WORKFLOW_ID}_coverage.regions.bed.gz |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp $(cat "/home/cromwell/outputs.${WORKFLOW_ID}" | jq --raw-output '.outputs."human.bp_coverage"') s3://mycob-temp/${WORKFLOW_ID}_coverage.bp.bed.gz |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/mycob-cromwell-outputs/ s3://mycob-cromwell-outputs/ --recursive |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/mycob-cromwell-logs/wf_logs/ s3://mycob-cromwell-logs/wf_logs/ --recursive |& tee -a /home/cromwell/aws.log
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/mycob-cromwell-logs/call_logs/ s3://mycob-cromwell-logs/call_logs/ --recursive |& tee -a /home/cromwell/aws.log
 
 #tar cfv - \
 #	--hard-dereference \
@@ -191,10 +193,10 @@ curl --silent -o /home/cromwell/timing.${WORKFLOW_ID}.html -X GET "http://127.0.
 #	--exclude='*.bam.bai' \
 #	--exclude='*.fastq' \
 #	--exclude='*.fastq.gz' \
-#	/home/cromwell/cromwell-executions/ | pigz -p 16 | aws --endpoint-url=https://storage.yandexcloud.net s3 cp - s3://ngs24-cromwell-execution/${WORKFLOW_ID}.tar.gz
-#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/status.${WORKFLOW_ID} s3://ngs24-cromwell-outputs/status/status.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
+#	/home/cromwell/cromwell-executions/ | pigz -p 16 | aws --endpoint-url=https://storage.yandexcloud.net s3 cp - s3://mycob-cromwell-execution/${WORKFLOW_ID}.tar.gz
+#aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/status.${WORKFLOW_ID} s3://mycob-cromwell-outputs/status/status.${WORKFLOW_ID} |& tee -a /home/cromwell/aws.log
 
-#cat /home/cromwell/aws.log | pigz -p 8 | aws --endpoint-url=https://storage.yandexcloud.net s3 cp - s3://ngs24-cromwell-logs/task_logs/aws.${TASK_ID}.${ATTEMPT}.log.gz
+#cat /home/cromwell/aws.log | pigz -p 8 | aws --endpoint-url=https://storage.yandexcloud.net s3 cp - s3://mycob-cromwell-logs/task_logs/aws.${TASK_ID}.${ATTEMPT}.log.gz
 #CROMWELL_ID=$(cat metadata.json | jq --raw-output '.id')
 
 
