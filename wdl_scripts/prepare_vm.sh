@@ -33,7 +33,7 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_t
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-zip --junk-paths /home/cromwell/imports.zip /home/cromwell/yandex_fastq_processing.wdl /home/cromwell/yandex_split_large_rg.wdl /home/cromwell/yandex_utilities.wdl
+zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl
 
 
 mkdir -p /home/cromwell/mycob-ref
@@ -68,9 +68,6 @@ sudo systemctl start env-cromwell.service
 
 sudo sysctl --system
 cd /home/cromwell
-#/usr/bin/java -Xms2000m -Xmx6000m -jar -Dconfig.file=/home/cromwell/yandex.conf /home/cromwell/cromwell-58.jar run -o /home/cromwell/options.json -i /home/cromwell/inputs.json -l /home/cromwell/labels.json -m /home/cromwell/metadata.json --imports /home/cromwell/imports.zip /home/cromwell/human_dnaseq.wdl |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-sudo systemctl start env-docker-gatk-cnn.service
-#sudo systemctl start env-snpeff.service
 
 while :
 do
