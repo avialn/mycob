@@ -24,15 +24,15 @@ echo "Build: ${BUILD}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${AT
 echo "Type HS: ${TYPE_HS}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 echo "Type VC: ${TYPE_VC}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 mkdir -p /home/cromwell/fastq
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
 zip --junk-paths /home/cromwell/imports.zip /home/cromwell/yandex_fastq_processing.wdl /home/cromwell/yandex_split_large_rg.wdl /home/cromwell/yandex_utilities.wdl
 
 
