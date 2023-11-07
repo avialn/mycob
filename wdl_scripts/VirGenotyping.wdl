@@ -1,4 +1,4 @@
-ersion 1.0
+version 1.0
 
 #java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run wdl_scripts/VirGenotyping.wdl -i inputs.json -o options.json
 
