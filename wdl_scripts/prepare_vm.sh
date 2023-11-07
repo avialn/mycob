@@ -35,6 +35,7 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scri
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
 zip --junk-paths /home/cromwell/imports.zip /home/cromwell/yandex_fastq_processing.wdl /home/cromwell/yandex_split_large_rg.wdl /home/cromwell/yandex_utilities.wdl
 
+
 mkdir -p /home/cromwell/mycob-ref
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/left_primers.fasta /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/right_primers.fasta /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
