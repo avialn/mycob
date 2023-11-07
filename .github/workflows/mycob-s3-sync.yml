@@ -6,7 +6,7 @@ name: Mycob S3 Sync
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [ main ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -26,9 +26,9 @@ jobs:
         with:
           args: --exclude '.git/*' --exclude '.github/*'
         env:
-          AWS_S3_BUCKET: ${{ secrets.NGS24_AWS_S3_BUCKET }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.NGS24_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.NGS24_AWS_SECRET_ACCESS_KEY }}
+          AWS_S3_BUCKET: ${{ secrets.MYCOB_AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.MYCOB_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.MYCOB_AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: 'ru-central1'
           AWS_S3_ENDPOINT: 'https://storage.yandexcloud.net'
           SOURCE_DIR: './wdl_scripts'
