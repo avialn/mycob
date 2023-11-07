@@ -1,0 +1,5 @@
+{
+  "final_workflow_outputs_dir": "/outputs/",
+  "final_workflow_log_dir": "/wf_logs/",
+  "backend": "Local"
+}
