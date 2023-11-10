@@ -660,7 +660,7 @@ workflow processing {
         File? metapneumo_qc_json = irma_qc_metapneumo.irma_qc_json
         File? metapneumo_json = report_metapneumo.report
         File? cov_qc_json = irma_qc_cov.irma_qc_json
-        Map[String, String] cov_qc_json2 = irma_qc_cov.irma_qc_json2
+        Map[String, String]? cov_qc_json2 = irma_qc_cov.irma_qc_json2
         File? cov_json = report_cov.report
         File? flu_qc_json = irma_qc_flu.irma_qc_json
         File? flu_json = report_flu.report
