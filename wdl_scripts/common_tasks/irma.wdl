@@ -153,6 +153,7 @@ task IrmaQC {
         File irma_qc_json = "~{sample_name}_~{module_irma}_irma_qc.json"
         File irma_length_txt = "~{sample_name}_~{module_irma}_irma_length.txt"
         String irma_type = read_string("~{sample_name}_~{module_irma}_irma_type.txt")
+        Map[String, String] = read_json("~{sample_name}_~{module_irma}_irma_qc.json")
     }
 }
 
