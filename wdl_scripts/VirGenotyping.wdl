@@ -2,10 +2,10 @@ version 1.0
 
 #java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run wdl_scripts/VirGenotyping.wdl -i inputs.json -o options.json
 
-import "../tasks/preprocessing.wdl" as preprocessing
-import "../tasks/kraken2.wdl" as kraken2
-import "../tasks/irma.wdl" as irma
-import "../tasks/nextclade.wdl" as nextclade
+import "./common_tasks/preprocessing.wdl" as preprocessing
+import "./common_tasks/kraken2.wdl" as kraken2
+import "./common_tasks/irma.wdl" as irma
+import "./common_tasks/nextclade.wdl" as nextclade
 
 workflow VirGenotyping {
 
@@ -20,6 +20,7 @@ workflow VirGenotyping {
         File index_genome = "db/bowtie2/GRCh38_ERCC.bowtie2.tar"
         File index_transcriptome = "db/bowtie2/GRCh38_transcriptome.bowtie2.tar"
         File kraken2_standard_8gb = "db/kraken2/k2_standard_08gb_20230605.tar.gz"
+        File kraken2_virus = "db/kraken2/k2_viral_20231009.tar.gz"
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
         Int threads = 8
         File reference_fasta_measles = "reference_fasta/MEASLES.fasta"
@@ -34,6 +35,7 @@ workflow VirGenotyping {
         File reference_fasta_metapneumo = "reference_fasta/METAPMEUMO.fasta"
         File reference_fasta_flu = "reference_fasta/FLU.fasta"
     }
+
 
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
@@ -128,6 +130,26 @@ workflow VirGenotyping {
         report = kraken2.report_txt,
         docker = "krona:2.8.1"
     }
+
+    call kraken2.Kraken2 as kraken2_vir {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        sample_name = sample_name,
+        kraken2_classifier = kraken2_virus,
+        threads = threads,
+        docker = "staphb/kraken2:latest"
+    }
+
+    call kraken2.Bracken as bracken_vir {
+        input:
+        sample_name = sample_name,
+        kraken_report = kraken2_vir.report_txt,
+        kraken2_classifier = kraken2_virus,
+        level = kraken_level,
+        docker = "nanozoo/bracken:2.8--dcb3e47"
+    }
+
 
     call irma.Irma as irma_measles {
         input:
@@ -605,5 +627,7 @@ workflow VirGenotyping {
         File kraken_txt = kraken2.report_txt
         File bracken_txt = bracken.report_txt
         File krona_kraken_html = krona_kraken.report_html
+        File kraken_virus_txt = kraken2_vir.report_txt
+        File bracken_virus_txt = bracken_vir.report_txt
     }
 }

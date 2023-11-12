@@ -24,16 +24,17 @@ echo "Build: ${BUILD}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${AT
 echo "Type HS: ${TYPE_HS}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 echo "Type VC: ${TYPE_VC}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 mkdir -p /home/cromwell/fastq
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/${PANEL}/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/amr_tasks.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl
+zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl
 
 
 mkdir -p /home/cromwell/mycob-ref
@@ -54,6 +55,7 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/amr/card.json /home/cromwell/mycob-ref/amr/CARD/ |& tee -a /home/cromwell/aws.log
 
 echo $FILES | jq --raw-output '.[] | .[]' | xargs -L1 -I'{}' aws --endpoint-url=https://storage.yandexcloud.net s3 cp {} /home/cromwell/fastq/ |& tee -a /home/cromwell/aws.log
 jq --arg key0 'task-id' --arg value0 ${TASK_ID} --arg key1 'attempt' --arg value1 ${ATTEMPT} '. | .[$key0]=$value0 | .[$key1]=$value1' <<<'{}' > /home/cromwell/labels.json
@@ -130,7 +132,8 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/mycob-cr
 
 tar cfv - \
 	--hard-dereference \
-	--exclude='1000G_phase1.snps.high_confidence.hg38.vcf.gz' \
+	--exclude='GRCh38_ERCC.bowtie2.tar' \
+    --exclude='1000G_phase1.snps.high_confidence.hg38.vcf.gz' \
 	--exclude='1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi' \
 	--exclude='1000g_pon.hg38.vcf.gz' \
 	--exclude='1000g_pon.hg38.vcf.gz.tbi' \
@@ -174,6 +177,7 @@ tar cfv - \
 	--exclude='hg38_intervar_20180118.txt' \
 	--exclude='hg38_intervar_20180118.txt.idx' \
 	--exclude='*.bam' \
+    --exclude='*.sam' \
 	--exclude='*.bam.bai' \
 	--exclude='*.fastq' \
 	--exclude='*.fastq.gz' \

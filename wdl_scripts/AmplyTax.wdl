@@ -20,9 +20,9 @@ version 1.0
 #silva_132 (eukaryotic 18S, v132 & v128): https://zenodo.org/record/1447330
 #pr2 (18S protists, metazoa, fungi and plants): https://github.com/pr2database/pr2database/releases/tag/v5.0.0
 
-import "../tasks/preprocessing.wdl" as preprocessing
-import "../tasks/kraken2.wdl" as kraken2
-import "../tasks/dada2.wdl" as dada2
+import "./common_tasks/preprocessing.wdl" as preprocessing
+import "./common_tasks/kraken2.wdl" as kraken2
+import "./common_tasks/dada2.wdl" as dada2
 
 workflow AmplyTax {
 
@@ -41,7 +41,7 @@ workflow AmplyTax {
         File kraken2_ncbi = "db/kraken2/ncbi_16s_18s_28s_ITS_kraken2.tar.gz" # default
         File kraken2_standard_8gb = "db/kraken2/k2_standard_08gb_20230605.tar.gz"
         File kraken2_pluspf_8gb = "db/kraken2/k2_pluspf_08gb_20231009.tar.gz"
-        File kraken2_16s = "db/kraken2/16S_Greengenes13.5_20200326.tar.gz "
+        File kraken2_16s = "db/kraken2/16S_Greengenes13.5_20200326.tar.gz"
 
         Boolean microb_16s = true
         #microb_16s dada2 classifiers
@@ -63,35 +63,43 @@ workflow AmplyTax {
         Int trim_f = 21
         Int trim_r = 26
         Int trunc_q = 2
-        Int trunc_f = 250
-        Int trunc_r = 210
-        Int min_overlap = 12
-        Int qiime_level = 7 #6 for genus, 7 for species
+        Int trunc_f = 250 #V3V4 is 460 nts with primers, so trunc_f+trunc_r > amplicon's length + 12
+        Int trunc_r = 210 #250 and 210 should be shorter than R1 and R1 lengths
+        Int minOverlap = 12 #если сумма ридов не покрывают длину ампликона, можно увеличить trunc_f+trunc_r или уменьшить minOverlap
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
-    call preprocessing.FastQC as fastqc_row_R1 {
+    call preprocessing.CheckInput as check_input {
+        input:
+        fastq = fastq_1,
+        min_reads = 500,
+        docker = "resouer/ubuntu-bc:latest"
+    }
+
+    if (check_input.proceed == "yes") {
+
+      call preprocessing.FastQC as fastqc_row_R1 {
         input:
         fastq = fastq_1,
         docker = "fastqc:4.4"
-    }
+      }
 
-    call preprocessing.FastQC as fastqc_row_R2 {
+      call preprocessing.FastQC as fastqc_row_R2 {
         input:
         fastq = fastq_2,
         docker = "fastqc:4.4"
-    }
+      }
 
-    call preprocessing.Trimmomatic as trimmomatic {
+      call preprocessing.Trimmomatic as trimmomatic {
         input:
         fastq_1 = fastq_1,
         fastq_2 = fastq_2,
         sample_name = sample_name,
         threads = threads,
-        docker = "trimmomatic:4.4"
-    }
+        docker = "trimmomatic:4.5"
+      }
 
-    if (cut_primers) {
+      if (cut_primers) {
         call preprocessing.Cutadapt as cutadapt_kraken {
             input:
             fastq_1 = trimmomatic.trim_fastq_1,
@@ -101,9 +109,9 @@ workflow AmplyTax {
             primer_right = primer_right,
             docker = "cutadapt:4.4"
         }
-    }
+      }
 
-    call preprocessing.HostFilter as host_filter {
+      call preprocessing.HostFilter as host_filter {
         input:
         fastq_1 = if cut_primers then cutadapt_kraken.cut_fastq_1 else trimmomatic.trim_fastq_1,
         fastq_2 = if cut_primers then cutadapt_kraken.cut_fastq_2 else trimmomatic.trim_fastq_2,
@@ -111,9 +119,9 @@ workflow AmplyTax {
         index_tar = if transcriptome_filtering then index_transcriptome else index_genome,
         threads = threads,
         docker = "bowtie2:4.4"
-    }
+      }
 
-    call preprocessing.PreprocessingQC as preprocessing_qc {
+      call preprocessing.PreprocessingQC as preprocessing_qc {
         input:
         sample_name = sample_name,
         trim_input_reads = trimmomatic.input_reads_trim,
@@ -123,21 +131,21 @@ workflow AmplyTax {
         host_input_reads = host_filter.input_reads_host,
         host_both_surviving = host_filter.both_surviving_host,
         docker = "python:4.4"
-    }
+      }
 
-    call preprocessing.FastQC as fastqc_trimed_R1 {
+      call preprocessing.FastQC as fastqc_trimed_R1 {
         input:
         fastq = host_filter.host_filtered_fastq_1,
         docker = "fastqc:4.4"
-    }
+      }
 
-    call preprocessing.FastQC as fastqc_trimed_R2 {
+      call preprocessing.FastQC as fastqc_trimed_R2 {
         input:
         fastq = host_filter.host_filtered_fastq_2,
         docker = "fastqc:4.4"
-    }
+      }
 
-    call kraken2.Kraken2 as kraken2 {
+      call kraken2.Kraken2 as kraken2 {
         input:
         fastq_1 = host_filter.host_filtered_fastq_1,
         fastq_2 = host_filter.host_filtered_fastq_2,
@@ -145,25 +153,25 @@ workflow AmplyTax {
         kraken2_classifier = kraken2_ncbi,
         threads = threads,
         docker = "staphb/kraken2:latest"
-    }
+      }
 
-    call kraken2.Bracken as bracken {
+      call kraken2.Bracken as bracken {
         input:
         sample_name = sample_name,
         kraken_report = kraken2.report_txt,
         kraken2_classifier = kraken2_ncbi,
         level = kraken_level,
         docker = "nanozoo/bracken:2.8--dcb3e47"
-    }
+      }
 
-    call kraken2.Krona as krona_kraken {
+      call kraken2.Krona as krona_kraken {
         input:
         sample_name = sample_name,
         report = kraken2.report_txt,
         docker = "krona:2.8.1"
-    }
+      }
 
-    if (cut_primers) {
+      if (cut_primers) {
         call preprocessing.Cutadapt as cutadapt_dada2 {
             input:
             fastq_1 = fastq_1,
@@ -173,9 +181,9 @@ workflow AmplyTax {
             primer_right = primer_right,
             docker = "cutadapt:4.4"
         }
-    }
+      }
 
-    if (microb_16s) {
+      if (microb_16s) {
         call dada2.Dada2 as dada2_microb_16s {
             input:
             fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
@@ -186,12 +194,14 @@ workflow AmplyTax {
             trunc_q = trunc_q,
             trunc_f = trunc_f,
             trunc_r = trunc_r,
-            dada2_classifier = silva_138
+            minOverlap = minOverlap,
+            dada2_classifier = silva_138,
+            docker = "dada2:1.26"
         }
-    }
+      }
 
-    if (fungi_18s) {
-        call dada2.Dada2 as dada2_fungi_18s  {
+      if (fungi_18s) {
+        call dada2.Dada2 as dada2_fungi_18s {
             input:
             fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
             fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
@@ -201,11 +211,13 @@ workflow AmplyTax {
             trunc_q = trunc_q,
             trunc_f = trunc_f,
             trunc_r = trunc_r,
-            dada2_classifier = unite_fungi
+            minOverlap = minOverlap,
+            dada2_classifier = pr2,
+            docker = "dada2:1.26"
         }
-    }
+      }
 
-    if (fungi_its) {
+      if (fungi_its) {
         call dada2.Dada2 as dada2_fungi_its  {
             input:
             fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
@@ -216,22 +228,28 @@ workflow AmplyTax {
             trunc_q = trunc_q,
             trunc_f = trunc_f,
             trunc_r = trunc_r,
-            dada2_classifier = silva_132
+            minOverlap = minOverlap,
+            dada2_classifier = unite_fungi,
+            docker = "dada2:1.26"
         }
+      }
     }
 
     output {
-        File fastqc_row_R1_html = fastqc_row_R1.summary_html
-        File fastqc_row_R2_html = fastqc_row_R2.summary_html
-        File fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
-        File fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
-        File preprocessing_qc_json = preprocessing_qc.report_json
-        File kraken_txt = kraken2.report_txt
-        File bracken_txt = bracken.report_txt
-        File krona_kraken_html = krona_kraken.report_html
+        File? fastqc_row_R1_html = fastqc_row_R1.summary_html
+        File? fastqc_row_R2_html = fastqc_row_R2.summary_html
+        File? fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
+        File? fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
+        File? preprocessing_qc_json = preprocessing_qc.report_json
+        File? kraken_txt = kraken2.report_txt
+        File? bracken_txt = bracken.report_txt
+        File? krona_kraken_html = krona_kraken.report_html
         File? dada2_microb_16s_tsv = dada2_microb_16s.seqtab_nochim_tsv
+        File? stat_dada2_microb_16s_tsv = dada2_microb_16s.stat_tsv
         File? dada2_fungi_18s_tsv = dada2_fungi_18s.seqtab_nochim_tsv
+        File? stat_dada2_fungi_18s_tsv = dada2_fungi_18s.stat_tsv
         File? dada2_fungi_its_tsv = dada2_fungi_its.seqtab_nochim_tsv
+        File? stat_dada2_fungi_its_tsv = dada2_fungi_its.stat_tsv
     }
 
 }

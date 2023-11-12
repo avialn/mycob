@@ -183,6 +183,7 @@ task Blast {
         qstart qend sstart send evalue bitscore qlen slen qcovs stitle" \
         -num_alignments ~{num_alignments} \
         -evalue 1e-6
+        # -num_alignments 1000000 в исходном коде
 
         rm tmp.fasta big.fasta
     >>>
