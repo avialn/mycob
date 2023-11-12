@@ -32,7 +32,7 @@ mkdir -p /home/cromwell/fastq
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 #aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-cp -f /home/cromwell/dev/mycob/wdl_scripts/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/${PANEL}/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log

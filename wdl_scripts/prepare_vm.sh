@@ -24,7 +24,7 @@ echo "Build: ${BUILD}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${AT
 echo "Type HS: ${TYPE_HS}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 echo "Type VC: ${TYPE_VC}" >> /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
 mkdir -p /home/cromwell/fastq
-aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/rsv_full/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/${PANEL}/run.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/irma.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-wdl/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
