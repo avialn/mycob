@@ -26,6 +26,7 @@ workflow AmpliResistome {
         File index_tar = "/home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar"
         File card_json = "/home/cromwell/mycob-ref/amr/CARD/card.json"
         Int min_contig_length = 500
+        Int lines_number = length(Files)
     }
 
 
