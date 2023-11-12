@@ -5,6 +5,7 @@ version 1.0
 #https://chanzuckerberg.zendesk.com/hc/en-us/articles/15091031482644-AMR-Pipeline-Workflow
 
 import "../common_tasks/amr_tasks.wdl" as tasks
+import "../common_tasks/yandex_utilities.wdl" as Utils
 
 workflow AmpliResistome {
 
