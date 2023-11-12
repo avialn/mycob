@@ -233,7 +233,7 @@ task Flash {
     }
 
     runtime {
-        docker: docker:"~{docker}"
+        docker: "~{docker}"
     }
 }
 
