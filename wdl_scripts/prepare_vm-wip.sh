@@ -7,7 +7,7 @@ export ATTEMPT=1
 export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0102_S32_L001_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0102_S32_L001_R2_001.fastq.gz\"]]"
 #export PANEL="hg38_reparation8"
 #export PANEL="hg38_genome"
-export PANEL="rsv_full"
+export PANEL="amr"
 export BUILD="hg38"
 export TYPE_HS="Amplicons"
 export TYPE_VC="Germline"
@@ -37,11 +37,12 @@ cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/irma.wdl /home/cromwell/
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/kraken2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/amr_tasks.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl
+zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl
 
 mkdir -p /home/cromwell/mycob-ref
 mkdir -p /home/cromwell/mycob-bed/rsv_full
@@ -76,6 +77,7 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/amr/card.json /home/cromwell/mycob-ref/amr/CARD/ |& tee -a /home/cromwell/aws.log
 mkdir -p /home/cromwell/humandb
 #sudo mount /home/cromwell/hg38-humandb.sqsh /home/cromwell/humandb -t squashfs -o loop
 

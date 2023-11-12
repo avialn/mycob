@@ -58,20 +58,6 @@ workflow processing {
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
 
-        # call Utils.trimmomatic as trimmomatic   {
-        #         input:
-        #             fastq_1 = trimm.R1_file,
-        #             fastq_2 = trimm.R2_file,
-        #             split = j,
-        #             sample_id = sample_id,
-        #             compression_level = compression_level,
-        #             preemptible_tries = preemptible_tries,
-        #             max_retries = max_retries
-        #             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
-        #     }
-
-#    Array[File] trimmed_R1 = flatten(trimm.R1_file)
-#    Array[File] trimmed_R2 = flatten(trimm.R2_file)
     String fastq_1 = trimm.R1_file
     String fastq_2 = trimm.R2_file
 
