@@ -7,7 +7,7 @@ version 1.0
 import "amr_tasks.wdl" as tasks
 import "yandex_utilities.wdl" as Utils
 
-workflow AmpliResistome {
+workflow processing {
 
     input {
         Array[Array[String]] Files
