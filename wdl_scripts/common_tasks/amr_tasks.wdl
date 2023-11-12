@@ -595,6 +595,54 @@ task Report {
 }
 
 
+task motus {
 
+    input {
+        File fastq_1
+        File fastq_2
+        Int threads
+        String docker
+        String sample_name
+    }
 
+    command <<<
+        set -euxo pipefail
 
+        motus profile \
+        -f ~{fastq_1} \
+        -r ~{fastq_2} \
+        -n ~{sample_name} \
+        -t ~{threads} \
+        -o motus.txt
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File out = "motus.txt"
+    }
+}
+
+task abricate {
+
+    input {
+        File contigs
+        String docker
+    }
+
+    command <<<
+        set -euxo pipefail
+
+        abricate ~{contigs} > abricate.tsv
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File out = "abricate.tsv"
+    }
+}
