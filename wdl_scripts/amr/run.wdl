@@ -4,7 +4,7 @@ version 1.0
 #https://github.com/chanzuckerberg/czid-workflows/blob/main/workflows/amr/run.wdl
 #https://chanzuckerberg.zendesk.com/hc/en-us/articles/15091031482644-AMR-Pipeline-Workflow
 
-import "фьк_tasks.wdl" as tasks
+import "amr_tasks.wdl" as tasks
 
 workflow AmpliResistome {
 
