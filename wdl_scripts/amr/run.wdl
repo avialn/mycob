@@ -162,6 +162,15 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
     }
 
+        call tasks.motus as motus {
+        input:
+            fastq_1 = trimmomatic.trim_fastq_1,
+            fastq_2 = trimmomatic.trim_fastq_2,
+            threads = threads,
+            sample_name = sample_name,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/motus:3.1.0"
+    }
+
     output {
         File r1_row_fastqc_html = row_R1_FastQC.qc_report_html
         File r2_row_fastqc_html = row_R2_FastQC.qc_report_html
@@ -184,6 +193,7 @@ workflow processing {
         File comprehensive_AMR_metrics_tsv = report.final_summary_tsv
         File bigtable_report_tsv = report.bigtable_tsv
         File primary_AMR_report_tsv = report.synthesized_report_tsv
+        File motus_output = motus.out
     } 
 
 
