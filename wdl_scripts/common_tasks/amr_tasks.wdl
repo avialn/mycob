@@ -595,7 +595,6 @@ task Report {
 }
 
 
-
 task motus {
 
     input {
@@ -626,3 +625,24 @@ task motus {
     }
 }
 
+task abricate {
+
+    input {
+        File contigs
+        String docker
+    }
+
+    command <<<
+        set -euxo pipefail
+
+        abricate ~{contigs} > abricate.tsv
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File out = "abricate.tsv"
+    }
+}

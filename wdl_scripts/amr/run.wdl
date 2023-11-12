@@ -164,13 +164,19 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
     }
 
-        call tasks.motus as motus {
+    call tasks.motus as motus {
         input:
             fastq_1 = trimmomatic.trim_fastq_1,
             fastq_2 = trimmomatic.trim_fastq_2,
             threads = threads,
             sample_name = sample_name,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/motus:3.1.0"
+    }
+
+    call tasks.abricate as abricate {
+        input:
+            contigs = spades.contigs_fa,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/abricate:1.0.1"
     }
 
     output {
@@ -196,6 +202,8 @@ workflow processing {
         File bigtable_report_tsv = report.bigtable_tsv
         File primary_AMR_report_tsv = report.synthesized_report_tsv
         File motus_output = motus.out
+        File abricate_tsv = abricate.out
+
     } 
 
 
