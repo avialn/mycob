@@ -4,10 +4,10 @@ export USER_ID="bdbf049c-df1d-43a2-9729-503390865dbb"
 export TASK_ID="1ce5ed45-226e-44b0-aa65-55824ed34248"
 export VM_NAME="cromwell-task-55824ed34248-1"
 export ATTEMPT=1
-export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/21784_S15_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/21784_S15_R2_001.fastq.gz\"]]"
+export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0306121-242611-16S_S289_L001_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0306121-242611-16S_S289_L001_R2_001.fastq.gz\"]]"
 #export PANEL="hg38_reparation8"
 #export PANEL="hg38_genome"
-export PANEL="amr"
+export PANEL="16S"
 export BUILD="hg38"
 export TYPE_HS="Amplicons"
 export TYPE_VC="Germline"
@@ -38,11 +38,12 @@ cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/kraken2.wdl /home/cromwe
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/nextclade.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/preprocessing.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/amr_tasks.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/dada2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl
+zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl /home/cromwell/dada2.wdl
 
 mkdir -p /home/cromwell/mycob-ref
 mkdir -p /home/cromwell/mycob-bed/rsv_full

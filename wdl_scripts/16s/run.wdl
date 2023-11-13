@@ -20,14 +20,14 @@ version 1.0
 #silva_132 (eukaryotic 18S, v132 & v128): https://zenodo.org/record/1447330
 #pr2 (18S protists, metazoa, fungi and plants): https://github.com/pr2database/pr2database/releases/tag/v5.0.0
 
-import "../common_tasks/preprocessing.wdl" as preprocessing
-import "../common_tasks/kraken2.wdl" as kraken2
-import "../common_tasks/dada2.wdl" as dada2
-import "../common_tasks/yandex_utilities.wdl" as Utils
-#import "preprocessing.wdl" as preprocessing
-#import "kraken2.wdl" as kraken2
-#import "dada2.wdl" as dada2
-#import "yandex_utilities.wdl" as Utils
+# import "../common_tasks/preprocessing.wdl" as preprocessing
+# import "../common_tasks/kraken2.wdl" as kraken2
+# import "../common_tasks/dada2.wdl" as dada2
+# import "../common_tasks/yandex_utilities.wdl" as Utils
+import "preprocessing.wdl" as preprocessing
+import "kraken2.wdl" as kraken2
+import "dada2.wdl" as dada2
+import "yandex_utilities.wdl" as Utils
 
 
 workflow processing {
