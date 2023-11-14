@@ -137,6 +137,7 @@ workflow FluGenotyping {
         kraken_report = kraken2_vir.report_txt,
         kraken2_classifier = kraken2_virus,
         level = kraken_level,
+        threshold = 0,
         docker = "nanozoo/bracken:2.8--dcb3e47"
     }
 
