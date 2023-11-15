@@ -657,7 +657,7 @@ task abritamr {
     command <<<
         set -euxo pipefail
 
-        abritamr run ~{contigs}
+        abritamr run --contigs ~{contigs}
     >>>
 
     runtime {
