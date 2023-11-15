@@ -653,5 +653,7 @@ workflow processing {
         File bracken_txt = bracken.report_txt
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
+        File bracken_virus_txt = bracken_vir.report_txt
+        File host_filter = host_filter.summary_txt
     }
 }
