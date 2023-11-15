@@ -19,7 +19,7 @@ task CheckInput {
         else
           proceed="no"
         fi
-        
+
         echo $proceed > proceed.txt
     >>>
 
@@ -157,7 +157,6 @@ task HostFilter {
     }
 
     command <<<
-        apt-get install bc -y
         set -euxo pipefail
 
         count_in="$(zcat ~{fastq_1} ~{fastq_2} | wc -l)"
@@ -184,7 +183,8 @@ task HostFilter {
         count_out="$(zcat sample_host_removed_R{1,2}.fastq.gz | wc -l)"
         count_out=$((count_out / 8))
         jq --null-input --arg count_out "$count_out" '{"host_filtered_reads":$count_out}' >> ~{sample_name}_hostfilter_stats.txt
-        percentage=$(bc <<< "scale=2; ($count_out/$count_in) * 100")
+
+        percentage=$((100 * count_out / count_in))
         echo "Both Surviving: $count_out ($percentage%)" > both_surviving.txt
     >>>
 
