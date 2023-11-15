@@ -183,7 +183,6 @@ task Blast {
         qstart qend sstart send evalue bitscore qlen slen qcovs stitle" \
         -num_alignments ~{num_alignments} \
         -evalue 1e-6
-        # -num_alignments 1000000 в исходном коде
 
         rm tmp.fasta big.fasta
     >>>
@@ -253,27 +252,47 @@ task Report {
             ("group_id", "category"),
         ]
 
+        # parse virus type by irma fasta (for flu and all viruses)
         def write_irma_report(
             report_file: Optional[str],
             sample_name: Optional[str],
             module_irma: Optional[str],
             irma_type: Optional[str]
         ):
-            irma_report = {
-                "sample_name": sample_name,
-                "module_irma": module_irma,
-                "irma_virus_type": irma_type
+            if module_irma == "FLU":
+                A_or_B = irma_type[0]
+                if len(irma_type) > 1:
+                    subtype = irma_type[1:]
+                else:
+                    subtype = "-"
+                if A_or_B == "A":
+                    irma_report = {
+                    "sample_name": sample_name,
+                    "module_irma": module_irma,
+                    "irma_virus_type": f"Influenza {A_or_B} {subtype}"
+                    }
+                else:
+                    irma_report = {
+                    "sample_name": sample_name,
+                    "module_irma": module_irma,
+                    "irma_virus_type": f"Influenza {A_or_B}"
+                    }
+            else:
+                virus_name = virus_name = irma_type.replace("_", " ")
+                irma_report = {
+                    "sample_name": sample_name,
+                    "module_irma": module_irma,
+                    "irma_virus_type": virus_name
             }
             with open(report_file, "w") as json_file:
                 json.dump(irma_report, json_file, indent=4)
 
-        write_irma_report ("~{sample_name}_~{module_irma}_report.json", "~{sample_name}", "~{module_irma}", "~{irma_type}")
-
-        # blast virus name (excluding cases of COVID and influenza)
+        # parse virus name by blast results (not for covid or influenza)
         def parse_blast (
             blast_results: Optional[str],
             pident_threshold: Optional[float],
-            min_aln_length: Optional[int]
+            min_aln_length: Optional[int],
+            irma_type: Optional[str]
         ) -> Optional[Dict]:
             df = pd.read_csv(
                 blast_results, sep='\t',
@@ -285,7 +304,7 @@ task Report {
                     "blast_virus_name": "Blast_results_are_empty"
                 }
             else:
-                df['stitle'] = df['stitle'].str.replace('|', '', regex=True)
+                df_filtered = df[df.qaccver == irma_type].reset_index(drop=True)
                 df_filtered = df.loc[
                     (df["pident"] >= (pident_threshold * 100)) & (df["length"] >= min_aln_length)
                 ]
@@ -296,7 +315,7 @@ task Report {
                 else:
                     df_filtered.loc[:,"qaccver"] = pd.Categorical(df_filtered.loc[:,"qaccver"])
                     df_filtered = df_filtered.sort_values(by="bitscore", ascending= False).reset_index()
-                    full_virus_name=df_filtered.loc [0, "stitle"]
+                    full_virus_name=df_filtered.loc [0, "stitle"].replace('|', '').replace(', complete genome', '')
                     results_summary = {
                         "blast_virus_name": full_virus_name
                     }
@@ -306,9 +325,10 @@ task Report {
             report_file: Optional[str],
             blast_results: Optional[str],
             pident_threshold: Optional[float],
-            min_aln_length: Optional[int]
+            min_aln_length: Optional[int],
+            irma_type: Optional[str]
         ):
-            blast_report = parse_blast (blast_results, pident_threshold, min_aln_length)
+            blast_report = parse_blast (blast_results, pident_threshold, min_aln_length, irma_type)
             with open(report_file) as file:
                 data = json.load(file)
             data["blast_virus_name"] = blast_report["blast_virus_name"]
@@ -320,7 +340,8 @@ task Report {
             blast_results: Optional[str],
             flu_metadata: Optional[str],
             pident_threshold: Optional[float],
-            min_aln_length: Optional[int]
+            min_aln_length: Optional[int],
+            irma_type: Optional[str]
         ) -> Optional[Dict]:
             df_md = pd.read_csv(
             flu_metadata,
@@ -349,12 +370,34 @@ task Report {
                         "blast_virus_name": "Try to modify pident_threshold or min_aln_length"
                     }
                 else:
+                    A_or_B = irma_type[0]
                     df_filtered["accession"] = df_filtered["saccver"].str.strip()
                     df_filtered["qaccver"] = pd.Categorical(df_filtered["qaccver"])
                     df_filtered.loc[:, "subtype_from_match_title"] = (
                     df_filtered.loc[:, "stitle"].str.extract(regex_subtype_pattern).astype("category")
-                    )
+                        )
                     segments = df_filtered.qaccver.unique()
+                    df_merge = pd.merge(df_filtered, df_md, on="accession", how="left")
+
+                    # find the names with the highest bitscore score for each segment
+                    if df_merge.empty:
+                        virus_name_allsegments = "-"
+                    else:
+                        names = []
+                        for seg in segments:
+                            df_sort_dropNaN = df_merge[df_merge.qaccver == seg]\
+                            .sort_values(by=["bitscore"], ascending=[False])\
+                            .dropna(subset=["virus_name"])\
+                            .reset_index(drop=True)
+                            if not df_sort_dropNaN.empty:
+                                best_name = df_sort_dropNaN["virus_name"].iloc[0]
+                                names.append(best_name)
+                        # find the most common name between all segments
+                        if len(names)>0:
+                            virus_name_allsegments = max(names, key=names.count)
+                        else:
+                            virus_name_allsegments = "-"
+
                     influenza_segment = {}
                     for segment in segments:
                         if "_PB2" in segment:
@@ -382,11 +425,30 @@ task Report {
                     subtype_HA, virus_name_HA = parse_HA_NA(4, df_filtered, df_md, reg_pat_H)
                     subtype_NA, virus_name_NA = parse_HA_NA(6, df_filtered, df_md, reg_pat_N)
                     subtype = get_subtype_value(subtype_HA, subtype_NA)
-                    results_summary = {
-                        "blast_subtype": subtype,
-                        "virus_name_HA": virus_name_HA,
-                        "virus_name_NA": virus_name_NA
-                    }
+
+                    if A_or_B == "A":
+                        #subtype by all segments
+                        subtype_counts = df_filtered['subtype_from_match_title'].value_counts()
+                        if len(subtype_counts) == 0:
+                            subtype_allsegments = None
+                        else:
+                            subtype_allsegments = subtype_counts.idxmax()
+
+
+                        results_summary = {
+                            "blast_subtype_HaNa": subtype,
+                            "blast_subtype_allsegments": subtype_allsegments,
+                            "virus_name_HA": virus_name_HA,
+                            "virus_name_NA": virus_name_NA,
+                            "virus_name_allsegments": virus_name_allsegments
+                        }
+
+                    if A_or_B == "B":
+                        results_summary = {
+                            "virus_name_HA": virus_name_HA,
+                            "virus_name_NA": virus_name_NA,
+                            "virus_name_allsegments": virus_name_allsegments
+                        }
             return results_summary
 
         def parse_HA_NA (
@@ -407,7 +469,11 @@ task Report {
                 if df_merge.empty:
                     virus_name = "-"
                 else:
-                    virus_name = df_merge.loc[0, "virus_name"]
+                    df_dropNaN = df_merge.dropna(subset=["virus_name"]).reset_index(drop=True)
+                    if not df_dropNaN.empty:
+                        virus_name = df_dropNaN.loc[0, "virus_name"]
+                    else:
+                        virus_name = "-"
                 return subtype, virus_name
             else:
                 subtype = "-"
@@ -445,28 +511,45 @@ task Report {
             blast_results: Optional[str],
             flu_metadata: Optional[str],
             pident_threshold: Optional[float],
-            min_aln_length: Optional[int]
+            min_aln_length: Optional[int],
+            irma_type: Optional[str]
         ):
-            blast_report = parse_blast_flu (
-            blast_results,
-            flu_metadata,
-            pident_threshold,
-            min_aln_length
-            )
             with open(report_file) as file:
                 data = json.load(file)
-            data["blast_type"] = blast_report ["blast_subtype"]
-            data["blast_virus_name_HA"] = blast_report ["virus_name_HA"]
-            data["blast_virus_name_NA"] = blast_report ["virus_name_NA"]
+            parsed_data = parse_blast_flu (blast_results,
+                             flu_metadata, \
+                             pident_threshold, \
+                             min_aln_length, \
+                             irma_type \
+                            )
+            data.update(parsed_data)
             with open(report_file, 'w') as outfile:
                 json.dump(data, outfile, indent=4)
 
+        # irma type
+        write_irma_report ("~{sample_name}_~{module_irma}_report.json", \
+                           "~{sample_name}", \
+                           "~{module_irma}", \
+                           "~{irma_type}" \
+                           )
+
+        # blast type
         if ("~{module_irma}" != "CoV") and ("~{module_irma}" != "FLU"):
-            write_blast_report ("~{sample_name}_~{module_irma}_report.json", "~{blast_res}", ~{pi_thresh}, ~{min_aln_len})
+            write_blast_report ("~{sample_name}_~{module_irma}_report.json", \
+                                "~{blast_res}", \
+                                ~{pi_thresh}, \
+                                ~{min_aln_len}, \
+                                "~{irma_type}" \
+                                )
         elif ("~{module_irma}" == "FLU"):
             flu_metadata = "/genomeset.dat"
-            write_flu_blast_report ("~{sample_name}_~{module_irma}_report.json", "~{blast_res}", flu_metadata,  ~{pi_thresh}, ~{min_aln_len})
-
+            write_flu_blast_report ("~{sample_name}_~{module_irma}_report.json", \
+                                   "~{blast_res}", \
+                                   flu_metadata, \
+                                   ~{pi_thresh}, \
+                                   ~{min_aln_len}, \
+                                   "~{irma_type}" \
+                                   )
         CODE
     >>>
 

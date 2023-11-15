@@ -42,7 +42,7 @@ task Bracken {
         File kraken_report
         File kraken2_classifier
         String level
-        Int threshold = 10
+        Int threshold = 0 # 10 by default - in cases where there's a largely diverse sample, 10 the number of reads at the strain/genome level required, not at the genus/species levels. 
         String docker
     }
 
