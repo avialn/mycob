@@ -646,3 +646,27 @@ task abricate {
         File out = "abricate.tsv"
     }
 }
+
+task abritamr {
+
+    input {
+        File contigs
+        String docker
+    }
+
+    command <<<
+        set -euxo pipefail
+
+        abritamr run --contigs ~{contigs}
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File out = "./abritamr/abritamr.txt"
+        File matches = "./abritamr/summary_matches.txt"
+        File virulence = "./abritamr/summary_virulence.txt"
+    }
+}
