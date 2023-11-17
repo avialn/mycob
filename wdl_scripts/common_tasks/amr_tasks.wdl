@@ -695,7 +695,7 @@ task blast {
 
     runtime {
         docker: "~{docker}"
-        backend: "DockerBLAST"
+        backend: "DockerAnnovar"
     }
 
     output {
