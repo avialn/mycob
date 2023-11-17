@@ -114,7 +114,7 @@ sudo systemctl start env-cromwell.service
 sudo sysctl --system
 cd /home/cromwell
 #/usr/bin/java -Xms2000m -Xmx6000m -jar -Dconfig.file=/home/cromwell/yandex.conf /home/cromwell/cromwell-58.jar run -o /home/cromwell/options.json -i /home/cromwell/inputs.json -l /home/cromwell/labels.json -m /home/cromwell/metadata.json --imports /home/cromwell/imports.zip /home/cromwell/human_dnaseq.wdl |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-sudo systemctl start env-docker-gatk-cnn.service
+#sudo systemctl start env-docker-gatk-cnn.service
 #sudo systemctl start env-snpeff.service
 
 while :
