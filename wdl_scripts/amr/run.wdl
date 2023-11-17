@@ -219,6 +219,7 @@ workflow processing {
         File abricate_tsv = abricate.out
         File abritamr_tsv = abritamr.out
         File abritamr_vir = abritamr.virulence
+        File blast_res = blast.blast_res
     } 
 
 
