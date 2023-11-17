@@ -47,7 +47,7 @@ cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a
 zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl /home/cromwell/dada2.wdl
 
 mkdir -p /home/cromwell/mycob-ref
-mkdir -p /home/cromwell/mycob-ref/blast #for S3 mounting
+mkdir -p /home/cromwell/mycob-ref/blast
 mkdir -p /home/cromwell/mycob-bed/rsv_full
 mkdir -p /home/cromwell/mycob-bed/rsv_full/human_bowtie2_index
 mkdir -p /home/cromwell/mycob-bed/rsv_full/kraken2
