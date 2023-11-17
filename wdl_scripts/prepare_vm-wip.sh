@@ -47,6 +47,7 @@ cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a
 zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl /home/cromwell/dada2.wdl
 
 mkdir -p /home/cromwell/mycob-ref
+mkdir -p /home/cromwell/mycob-ref/blast
 mkdir -p /home/cromwell/mycob-bed/rsv_full
 mkdir -p /home/cromwell/mycob-bed/rsv_full/human_bowtie2_index
 mkdir -p /home/cromwell/mycob-bed/rsv_full/kraken2
@@ -113,7 +114,7 @@ sudo systemctl start env-cromwell.service
 sudo sysctl --system
 cd /home/cromwell
 #/usr/bin/java -Xms2000m -Xmx6000m -jar -Dconfig.file=/home/cromwell/yandex.conf /home/cromwell/cromwell-58.jar run -o /home/cromwell/options.json -i /home/cromwell/inputs.json -l /home/cromwell/labels.json -m /home/cromwell/metadata.json --imports /home/cromwell/imports.zip /home/cromwell/human_dnaseq.wdl |& tee -a /s3/mycob-cromwell-logs/task_logs/task.${TASK_ID}.${ATTEMPT}.log
-sudo systemctl start env-docker-gatk-cnn.service
+#sudo systemctl start env-docker-gatk-cnn.service
 #sudo systemctl start env-snpeff.service
 
 while :
