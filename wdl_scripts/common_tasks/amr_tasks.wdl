@@ -670,3 +670,35 @@ task abritamr {
         File virulence = "./abritamr/summary_virulence.txt"
     }
 }
+
+task blast {
+
+    input {
+        File contigs
+        Int threads
+        String docker
+    }
+
+    command <<<
+        set -ex -o pipefail
+
+        blastn \
+        -query ~{contigs} \
+        -db /home/cromwell/mycob-ref/blast/nt_prok \
+        -out blast_res.txt \
+        -num_threads ~{threads} \
+        -outfmt "6 qaccver saccver pident length mismatch gapopen \
+        qstart qend sstart send evalue bitscore qlen slen qcovs stitle" \
+        -max_target_seqs 10 \
+        -evalue 1e-50
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+        backend: "DockerBLAST"
+    }
+
+    output {
+        File blast_res = "blast_res.txt"
+    }
+}

@@ -185,6 +185,14 @@ workflow processing {
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/abritamr:1.0.14"
     }
 
+    call tasks.blast as blast {
+        input:
+            contigs = spades.contigs_fa,
+            threads = threads,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/abritamr:1.0.14"
+    }
+
+
     output {
         File r1_row_fastqc_html = row_R1_FastQC.qc_report_html
         File r2_row_fastqc_html = row_R2_FastQC.qc_report_html

@@ -39,6 +39,7 @@ zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwe
 
 
 mkdir -p /home/cromwell/mycob-ref
+mkdir -p /home/cromwell/mycob-ref/blast #for S3 mounting
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/left_primers.fasta /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/right_primers.fasta /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar /home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/ |& tee -a /home/cromwell/aws.log
