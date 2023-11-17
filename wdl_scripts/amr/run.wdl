@@ -189,7 +189,7 @@ workflow processing {
         input:
             contigs = spades.contigs_fa,
             threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/abritamr:1.0.14"
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.15.0"
     }
 
 
