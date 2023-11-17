@@ -188,7 +188,7 @@ workflow processing {
     call tasks.blast as blast {
         input:
             contigs = spades.contigs_fa,
-            threads = threads,
+            threads = 2,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.15.0"
     }
 
