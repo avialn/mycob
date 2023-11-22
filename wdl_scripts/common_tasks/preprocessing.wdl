@@ -76,7 +76,7 @@ task Trimmomatic {
         R1_trimmed.fastq.gz R1_unpaired.fastq.gz \
         R2_trimmed.fastq.gz R2_unpaired.fastq.gz \
         ILLUMINACLIP:/opt/trimmomatic/adapters/TruSeq3-PE-2.fa:4:30:5:2:keepBothReads \
-        LEADING:3 TRAILING:3 SLIDINGWINDOW:6:15 MINLEN:60 >> ~{sample_name}_trimmomatic_stats.txt 2>&1
+        LEADING:3 TRAILING:3 SLIDINGWINDOW:6:15 MINLEN:36 >> ~{sample_name}_trimmomatic_stats.txt 2>&1
 
         grep "Input Read Pairs:" ~{sample_name}_trimmomatic_stats.txt | \
         sed 's/\(Input Read Pairs: [0-9]*\).*/\1/' > input_read_pairs.txt
