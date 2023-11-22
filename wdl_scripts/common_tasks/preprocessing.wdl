@@ -148,8 +148,8 @@ task Cutadapt {
 task HostFilter {
 
     input {
-        File fastq_1
-        File fastq_2
+        File? fastq_1
+        File? fastq_2
         String sample_name
         File index_tar
         Int threads
