@@ -193,6 +193,6 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/status.$
 cat /home/cromwell/aws.log | pigz -p 8 | aws --endpoint-url=https://storage.yandexcloud.net s3 cp - s3://mycob-cromwell-logs/task_logs/aws.${TASK_ID}.${ATTEMPT}.log.gz
 #CROMWELL_ID=$(cat metadata.json | jq --raw-output '.id')
 echo "Shuthdown VM in 60 sec..."
-sleep 60
+sleep 600
 sudo shutdown -h now
 
