@@ -6,7 +6,7 @@ import "preprocessing.wdl" as preprocessing
 import "kraken2.wdl" as kraken2
 import "irma.wdl" as irma
 import "nextclade.wdl" as nextclade
-#import "yandex_utilities.wdl" as Utils
+import "yandex_utilities.wdl" as Utils
 #import "../common_tasks/preprocessing.wdl" as preprocessing
 #import "../common_tasks/kraken2.wdl" as kraken2
 #import "../common_tasks/irma.wdl" as irma
