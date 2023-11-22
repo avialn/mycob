@@ -164,7 +164,7 @@ workflow processing {
     call kraken2.Kraken2 as kraken2_vir {
         input:
         fastq_1 = host_filter.host_filtered_fastq_1,
-        fastq_2 = host_filter.host_filtered_fastq_2,
+        fastq_2 = host_filter.host_filtered_fastq_3,
         sample_name = sample_name,
         kraken2_classifier = kraken2_virus,
         threads = 1,
