@@ -3,11 +3,15 @@ version 1.0
 #java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run VirGenotyping.wdl -i inputs.json -o options.json
 
 #import "preprocessing.wdl" as preprocessing
+#import "kraken2.wdl" as kraken2
+#import "irma.wdl" as irma
+#import "nextclade.wdl" as nextclade
+#import "yandex_utilities.wdl" as Utils
 import "../common_tasks/preprocessing.wdl" as preprocessing
-import "kraken2.wdl" as kraken2
-import "irma.wdl" as irma
-import "nextclade.wdl" as nextclade
-import "yandex_utilities.wdl" as Utils
+import "../common_tasks/kraken2.wdl" as kraken2
+import "../common_tasks/irma.wdl" as irma
+import "../common_tasks/nextclade.wdl" as nextclade
+import "../common_tasks/yandex_utilities.wdl" as Utils
 
 workflow processing {
 
