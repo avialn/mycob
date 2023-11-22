@@ -164,7 +164,7 @@ workflow processing {
     call kraken2.Kraken2 as kraken2_vir {
         input:
         fastq_1 = host_filter.host_filtered_fastq_1,
-        fastq_2 = host_filter.host_filtered_fastq_3,
+        fastq_2 = host_filter.host_filtered_fastq_2,
         sample_name = sample_name,
         kraken2_classifier = kraken2_virus,
         threads = 1,
@@ -659,6 +659,6 @@ workflow processing {
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
-        File host_filter = host_filter.summary_txt
+        File host_filter_summary = host_filter.summary_txt
     }
 }
