@@ -5,7 +5,7 @@ version 1.0
 import "./common_tasks/preprocessing.wdl" as preprocessing
 import "./common_tasks/kraken2.wdl" as kraken2
 import "./common_tasks/irma.wdl" as irma
-import "./common_tasks/nextclade.wdl" as nextclade
+
 
 workflow GutGenotyping {
 
