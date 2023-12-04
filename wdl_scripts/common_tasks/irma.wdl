@@ -64,6 +64,97 @@ task Irma {
     }
 }
 
+task IrmaGut {
+
+    input {
+        File trim_R1
+        File trim_R2
+        String module_irma
+        String docker
+    }
+
+    command <<<
+        set -ex -o pipefail
+
+        /opt/flu-amd/IRMA ~{module_irma} ~{trim_R1} ~{trim_R2} irma_res
+
+        # determine if assemly was successful
+        if compgen -G "irma_res/*.fasta"; then
+            proceed="yes"
+        else
+            proceed="no IRMA assembly generated"
+        fi
+
+        echo $proceed > proceed.txt
+
+        if [ $proceed == "yes" ] && [ ~{module_irma} == "FLU" ]; then
+            TYPE=$(basename $(find irma_res/*.fasta | head -n 1 ) | cut -d "_" -f 1)
+
+            ## Type == A then grab subtype if exists
+            if [ $TYPE == "A" ]; then
+                if compgen -G "irma_res/*_HA*.fasta"; then
+                    HA_SUBTYPE=$(basename $(find irma_res/*HA*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
+                else
+                    HA_SUBTYPE="-"
+                fi
+
+                if compgen -G "irma_res/*_NA*.fasta"; then
+                    NA_SUBTYPE=$(basename $(find irma_res/*NA*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
+                else
+                    NA_SUBTYPE="-"
+                fi
+
+            else
+                HA_SUBTYPE="-"
+                NA_SUBTYPE="-"
+            fi
+        fi
+
+        if [ $proceed == "yes" ] && [ ~{module_irma} == "ROTAVIRUS" ]; then
+            TYPE=$(basename $(find irma_res/*.fasta | head -n 1 ) | cut -d "_" -f 1)
+
+            ## Type == A then grab subtype if exists
+            if [ $TYPE == "A" ]; then
+                if compgen -G "irma_res/*_VP7*.fasta"; then
+                    G_SUBTYPE=$(basename $(find irma_res/*VP7*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
+                else
+                    G_SUBTYPE="-"
+                fi
+
+                if compgen -G "irma_res/*_VP4*.fasta"; then
+                    P_SUBTYPE=$(basename $(find irma_res/*VP4*.fasta | head -n 1 ) | cut -d "_" -f 3 | cut -d "." -f1)
+                else
+                    P_SUBTYPE="-"
+                fi
+
+            else
+                G_SUBTYPE="-"
+                P_SUBTYPE="-"
+            fi
+        fi
+
+        echo ${TYPE}${HA_SUBTYPE}${NA_SUBTYPE} > irma_flu_type.txt
+        echo ${TYPE}${G_SUBTYPE}${P_SUBTYPE} > irma_rotavirus_type.txt
+
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        String proceed = read_string("proceed.txt")
+        String flu_type = read_string("irma_flu_type.txt")
+        String rotavirus_type = read_string("irma_rotavirus_type.txt")
+        Array[File] irma_fasta  = glob("irma_res/*.fasta")
+        Array[File] ha_fasta = select_first([glob("irma_res/*HA*.fasta"), " "])
+        Array[File] na_fasta = select_first([glob("irma_res/*NA*.fasta"), " "])
+        Array[File] g_fasta = select_first([glob("irma_res/*_VP7*.fasta"), " "])
+        Array[File] p_fasta = select_first([glob("irma_res/*_VP4*.fasta"), " "])
+        File? irma_qc = "irma_res/tables/READ_COUNTS.txt"
+    }
+}
+
 task IrmaQC {
 
     input {
@@ -174,7 +265,9 @@ task Blast {
         cat ~{sep=" " fasta_files} > tmp.fasta
         sed 's/\./N/g' tmp.fasta > big.fasta
 
-        /opt/blast/ncbi-blast-2.9.0+/bin/blastn \
+        VERSION=$(ls /opt/blast/ | grep "ncbi")
+
+        /opt/blast/$VERSION/bin/blastn \
         -query big.fasta \
         -db /opt/blast/~{db} \
         -out ~{sample_name}_~{module_irma}_blast_res \
@@ -205,6 +298,7 @@ task Report {
         String irma_type
         Float pi_thresh=0.8
         Int min_aln_len=50
+        File? rotavirus_metadata
         String docker
     }
 
@@ -252,7 +346,7 @@ task Report {
             ("group_id", "category"),
         ]
 
-        # parse virus type by irma fasta (for flu and all viruses)
+        # parse virus type by irma fasta (for flu, rotavirus and all others)
         def write_irma_report(
             report_file: Optional[str],
             sample_name: Optional[str],
@@ -277,8 +371,27 @@ task Report {
                     "module_irma": module_irma,
                     "irma_virus_type": f"Influenza {A_or_B}"
                     }
+            elif module_irma == "ROTAVIRUS":
+                type_virus = irma_type[0]
+                if len(irma_type) > 1:
+                    subtype = irma_type[1:]
+                    subtype = re.sub(r'(P\d+)', r'[\1]', subtype)
+                else:
+                    subtype = "-"
+                if type_virus == "A":
+                    irma_report = {
+                    "sample_name": sample_name,
+                    "module_irma": module_irma,
+                    "irma_virus_type": f"Rotavirus {type_virus} {subtype}"
+                    }
+                else:
+                    irma_report = {
+                    "sample_name": sample_name,
+                    "module_irma": module_irma,
+                    "irma_virus_type": f"Rotavirus {type_virus}"
+                    }
             else:
-                virus_name = virus_name = irma_type.replace("_", " ")
+                virus_name = irma_type.replace("_", " ")
                 irma_report = {
                     "sample_name": sample_name,
                     "module_irma": module_irma,
@@ -287,7 +400,7 @@ task Report {
             with open(report_file, "w") as json_file:
                 json.dump(irma_report, json_file, indent=4)
 
-        # parse virus name by blast results (not for covid or influenza)
+        # parse virus name by blast results (NOT for covid or influenza or rotavirus)
         def parse_blast (
             blast_results: Optional[str],
             pident_threshold: Optional[float],
@@ -430,10 +543,9 @@ task Report {
                         #subtype by all segments
                         subtype_counts = df_filtered['subtype_from_match_title'].value_counts()
                         if len(subtype_counts) == 0:
-                            subtype_allsegments = None
+                            subtype_allsegments = "-"
                         else:
                             subtype_allsegments = subtype_counts.idxmax()
-
 
                         results_summary = {
                             "blast_subtype_HaNa": subtype,
@@ -516,16 +628,199 @@ task Report {
         ):
             with open(report_file) as file:
                 data = json.load(file)
-            parsed_data = parse_blast_flu (blast_results,
-                             flu_metadata, \
-                             pident_threshold, \
-                             min_aln_length, \
-                             irma_type \
-                            )
-            data.update(parsed_data)
+            blast_data = parse_blast_flu (blast_results, flu_metadata, pident_threshold, min_aln_length, irma_type)
+            data.update(blast_data)
             with open(report_file, 'w') as outfile:
                 json.dump(data, outfile, indent=4)
 
+        ############### ROTAVIRUS
+
+        def parse_blast_rotavirus (
+            blast_results: Optional[str],
+            rotavirus_metadata: Optional[str],
+            pident_threshold: Optional[float],
+            min_aln_length: Optional[int],
+            irma_type: Optional[str]
+        ) -> Optional[Dict]:
+            df_md = pd.read_csv(rotavirus_metadata)
+            df = pd.read_csv(
+                blast_results, sep='\t',
+                names=[name for name, coltype in blast_cols],
+                dtype={name: coltype for name, coltype in blast_cols},
+            )
+            if df.empty:
+                results_summary = {
+                    "blast_virus_name": "Blast_results_are_empty"
+                }
+            else:
+                df_filtered = df.loc[
+                    (df["pident"] >= (pident_threshold * 100)) & (df["length"] >= min_aln_length)
+                ]
+                if df_filtered.empty:
+                    results_summary = {
+                        "blast_virus_name": "Try to modify pident_threshold or min_aln_length"
+                    }
+                else:
+                    type_virus = irma_type[0]
+                    df_filtered["GenBank Accessions"] = df_filtered['saccver'].str.split('.').str[0]
+                    df_filtered["qaccver"] = pd.Categorical(df_filtered["qaccver"])
+                    segments = df_filtered.qaccver.unique()
+                    df_merge = pd.merge(df_filtered, df_md, on="GenBank Accessions", how="left")
+
+                   # find the names with the highest bitscore score for each segment
+                    if df_merge.empty:
+                        virus_name_allsegments = "-"
+                    else:
+                        names = []
+                        for seg in segments:
+                            df_seg_sort = df_merge[df_merge.qaccver == seg]\
+                            .sort_values(by=["bitscore"], ascending=[False])\
+                            .dropna(subset=["Genome Name"])\
+                            .reset_index(drop=True)
+                            if not df_seg_sort.empty:
+                                best_name = df_seg_sort["Genome Name"].iloc[0]
+                                names.append(best_name)
+                        # find the most common name between all segments
+                        if len(names)>0:
+                            virus_name_allsegments = max(names, key=names.count)
+                        else:
+                            virus_name_allsegments = "-"
+
+                    rotavirus_segment = {}
+                    for segment in segments:
+                        if "_VP1" in segment:
+                            rotavirus_segment[segment] = 1
+                        if "_VP2" in segment:
+                            rotavirus_segment[segment] = 2
+                        if "_VP3" in segment:
+                            rotavirus_segment[segment] = 3
+                        if "_VP4" in segment:
+                            rotavirus_segment[segment] = 4
+                        if "_NSP1" in segment:
+                            rotavirus_segment[segment] = 5
+                        if "_VP6" in segment:
+                            rotavirus_segment[segment] = 6
+                        if "_NSP3" in segment:
+                            rotavirus_segment[segment] = 7
+                        if "_NSP2" in segment:
+                            rotavirus_segment[segment] = 8
+                        if "_VP7" in segment:
+                            rotavirus_segment[segment] = 9
+                        if "_NSP4" in segment:
+                            rotavirus_segment[segment] = 10
+                        if "_NSP5" in segment:
+                            rotavirus_segment[segment] = 11
+
+                    df_merge["qaccver"] = df_merge["qaccver"].map(rotavirus_segment)
+                    df_merge = df_merge.sort_values(
+                        by=["qaccver", "bitscore"], ascending=[True, False]
+                    ).set_index("qaccver")
+                    reg_pat_G = r"(G\d)" #9 segment, _VP7
+                    reg_pat_P = r"(P\d)" #4 segment, _VP4
+                    subtype_G, virus_name_G = parse_G_P(9, df_merge, reg_pat_G)
+                    subtype_P, virus_name_P = parse_G_P(4, df_merge, reg_pat_P)
+                    subtype = get_subtype_value_GP (subtype_G, subtype_P)
+
+                    if type_virus == "A":
+                        # subtype by all segments
+                        subtype_counts = df_merge['Genotype'].value_counts()
+                        if len(subtype_counts) == 0:
+                            subtype_allsegments = "-"
+                        else:
+                            subtype_allsegments = subtype_counts.idxmax()
+                            subtype_allsegments = re.sub(r'(P\d+)', r'[\1]', subtype_allsegments)
+
+
+                        results_summary = {
+                            "blast_subtype_by_G[P]seg": subtype,
+                            "blast_subtype_allsegments": subtype_allsegments,
+                            "virus_name_G": virus_name_G,
+                            "virus_name_[P]": virus_name_P,
+                            "virus_name_allsegments": virus_name_allsegments
+                        }
+
+                    else:
+                        results_summary = {
+                            "virus_name_G": virus_name_G,
+                            "virus_name_[P]": virus_name_P,
+                            "virus_name_allsegments": virus_name_allsegments
+                        }
+            return results_summary
+
+        def parse_G_P (
+            seg: Optional[int],
+            df: Optional[pd.DataFrame],
+            reg_pat: Optional[str]
+        ) -> Optional[Tuple]:
+            if seg in df.index:
+                df_seg = df.loc[seg, :]
+                tmp = df_seg["Genotype"].value_counts()
+                if len(tmp) == 0:
+                    subtype = None
+                else:
+                    result = re.search(reg_pat, tmp.index[0])
+                    subtype = result.group(0)
+                if df.empty:
+                    virus_name = "-"
+                else:
+                    df_dropNaN = df_seg.dropna(subset=["Genome Name"]).reset_index(drop=True)
+                    if not df_dropNaN.empty:
+                        virus_name = df_dropNaN.loc[0, "Genome Name"]
+                    else:
+                        virus_name = "-"
+                return subtype, virus_name
+            else:
+                subtype = "-"
+                virus_name = "-"
+                return subtype, virus_name
+
+        def get_subtype_value_GP (
+            subtype_G: Optional[str],
+            subtype_P: Optional[str]
+        ) -> Optional[str]:
+            subtype = ""
+            if subtype_G is None and subtype_P is None:
+                subtype = "-"
+            elif subtype_G is not None and subtype_P is None:
+                G: str = subtype_G
+                subtype = f"{G}" if G != "" else "-"
+            elif subtype_G is None and subtype_P is not None:
+                P: str = subtype_P
+                subtype = f"[{P}]" if P != "" else "-"
+            else:
+                G: str = subtype_G
+                P: str = subtype_P
+                if G == "" and P == "":
+                    subtype = "-"
+                else:
+                    if G != "":
+                        G = f"{G}"
+                    if P != "":
+                        P = f"[{P}]"
+                    subtype = f"{G}{P}"
+            return subtype
+
+        def write_rotavirus_blast_report (
+            report_file: Optional[str],
+            blast_results: Optional[str],
+            rotavirus_metadata: Optional[str],
+            pident_threshold: Optional[float],
+            min_aln_length: Optional[int],
+            irma_type: Optional[str]
+        ):
+            with open(report_file) as file:
+                data = json.load(file)
+            blast_data = parse_blast_rotavirus (blast_results,
+                             rotavirus_metadata,
+                             pident_threshold,
+                             min_aln_length,
+                             irma_type
+                            )
+            data.update(blast_data)
+            with open(report_file, 'w') as outfile:
+                json.dump(data, outfile, indent=4)
+
+        ####### WRITING
         # irma type
         write_irma_report ("~{sample_name}_~{module_irma}_report.json", \
                            "~{sample_name}", \
@@ -534,7 +829,7 @@ task Report {
                            )
 
         # blast type
-        if ("~{module_irma}" != "CoV") and ("~{module_irma}" != "FLU"):
+        if ("~{module_irma}" != "CoV") and ("~{module_irma}" != "FLU") and ("~{module_irma}" != "ROTAVIRUS"):
             write_blast_report ("~{sample_name}_~{module_irma}_report.json", \
                                 "~{blast_res}", \
                                 ~{pi_thresh}, \
@@ -546,6 +841,14 @@ task Report {
             write_flu_blast_report ("~{sample_name}_~{module_irma}_report.json", \
                                    "~{blast_res}", \
                                    flu_metadata, \
+                                   ~{pi_thresh}, \
+                                   ~{min_aln_len}, \
+                                   "~{irma_type}" \
+                                   )
+        elif ("~{module_irma}" == "ROTAVIRUS"):
+            write_rotavirus_blast_report ("~{sample_name}_~{module_irma}_report.json", \
+                                   "~{blast_res}", \
+                                   "~{rotavirus_metadata}", \
                                    ~{pi_thresh}, \
                                    ~{min_aln_len}, \
                                    "~{irma_type}" \
