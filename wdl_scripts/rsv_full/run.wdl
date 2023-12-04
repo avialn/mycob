@@ -621,7 +621,7 @@ workflow processing {
             HA_tsv = nextclade_flu.HA_nextclade,
             NA_tsv = nextclade_flu.NA_nextclade,
             report = report_flu.report,
-            antigenic_frame = "/home/cromwell/rsv_full/antigenic_frame.txt",
+            antigenic_frame = "/home/cromwell/mycob-ref/rsv_full/antigenic_frame.txt",
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
     }
