@@ -66,6 +66,7 @@ mkdir -p /home/cromwell/mycob-bed/rsv_full/IRMA_RES/modules/FLU/reference
 
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/left_primers.fasta /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/right_primers.fasta /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/antigenic_frame.txt /home/cromwell/mycob-ref/rsv_full/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar /home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/human_bowtie2_index/GRCh38_transcriptome.bowtie2.tar /home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz /home/cromwell/mycob-ref/rsv_full/kraken2/ |& tee -a /home/cromwell/aws.log
