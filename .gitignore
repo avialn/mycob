@@ -2,3 +2,6 @@ db/
 make_metadata_rotavirus/
 tools/
 tmp/
+inputs.json
+blast.wdl
+cromwell-executions/
