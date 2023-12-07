@@ -5,3 +5,4 @@ tmp/
 inputs.json
 blast.wdl
 cromwell-executions/
+inputs.json
