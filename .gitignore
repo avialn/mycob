@@ -1,3 +1,4 @@
 db/
 make_metadata_rotavirus/
 tools/
+tmp/
