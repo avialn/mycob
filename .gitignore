@@ -6,3 +6,4 @@ inputs.json
 blast.wdl
 cromwell-executions/
 snpEff/
+wdl_scripts/snpeff_flu.wdl
