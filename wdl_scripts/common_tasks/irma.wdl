@@ -715,11 +715,11 @@ task Report {
                     df_merge = df_merge.sort_values(
                         by=["qaccver", "bitscore"], ascending=[True, False]
                     ).set_index("qaccver")
-                    reg_pat_G = r"(G\d)" #9 segment, _VP7
-                    reg_pat_P = r"(P\d)" #4 segment, _VP4
+                    reg_pat_G = r"(G\d{1,2}|G\[\d{1,2}\])" #9 segment, _VP7
+                    reg_pat_P = r"(P\[\d{1,2}\]|P\d{1,2}|P\(\d\))" #4 segment, _VP4
                     subtype_G, virus_name_G = parse_G_P(9, df_merge, reg_pat_G)
                     subtype_P, virus_name_P = parse_G_P(4, df_merge, reg_pat_P)
-                    subtype = get_subtype_value_GP (subtype_G, subtype_P)
+                    subtype = get_subtype_value_GP(subtype_G, subtype_P)
 
                     if type_virus == "A":
                         # subtype by all segments
@@ -758,8 +758,8 @@ task Report {
                 if len(tmp) == 0:
                     subtype = None
                 else:
-                    result = re.search(reg_pat, tmp.index[0])
-                    subtype = result.group(0)
+                    result = re.findall(reg_pat, tmp.index[0])
+                    subtype = "".join(result)
                 if df.empty:
                     virus_name = "-"
                 else:
@@ -796,7 +796,7 @@ task Report {
                     if G != "":
                         G = f"{G}"
                     if P != "":
-                        P = f"[{P}]"
+                        P = f"{P}"
                     subtype = f"{G}{P}"
             return subtype
 
@@ -853,6 +853,7 @@ task Report {
                                    ~{min_aln_len}, \
                                    "~{irma_type}" \
                                    )
+
         CODE
     >>>
 
