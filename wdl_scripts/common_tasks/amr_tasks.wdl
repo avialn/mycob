@@ -681,6 +681,7 @@ task blast {
 
     command <<<
         set -ex -o pipefail
+        touch blast_res.txt
         exit
         /opt/blast/ncbi-blast-2.9.0+/bin/blastn \
         -query ~{contigs} \
