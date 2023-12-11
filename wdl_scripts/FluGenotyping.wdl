@@ -25,7 +25,7 @@ workflow FluGenotyping {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
         Int threads = 8
         File reference_fasta_flu = "reference_fasta/FLU.fasta"
-        File HA_ref = "reference_fasta/tmp.fasta"
+        File HA_ref = "reference_fasta/HA_A_Wisconsin_67_2022.fasta"
         File NA_ref = "reference_fasta/NA_A_Wisconsin_67_2022.fasta"
         File snpeff_config = "snpEff_5.2/snpEff.config"
         File snpeff_db = "snpEff_5.2/data.zip"
