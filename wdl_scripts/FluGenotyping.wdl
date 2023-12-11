@@ -6,6 +6,7 @@ import "./common_tasks/preprocessing.wdl" as preprocessing
 import "./common_tasks/kraken2.wdl" as kraken2
 import "./common_tasks/irma.wdl" as irma
 import "./common_tasks/nextclade.wdl" as nextclade
+import "./common_tasks/snpeff.wdl" as snpeff
 
 workflow FluGenotyping {
 
@@ -24,8 +25,11 @@ workflow FluGenotyping {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
         Int threads = 8
         File reference_fasta_flu = "reference_fasta/FLU.fasta"
+        File HA_ref = "reference_fasta/tmp.fasta"
+        File NA_ref = "reference_fasta/NA_A_Wisconsin_67_2022.fasta"
+        File snpeff_config = "snpEff_5.2/snpEff.config"
+        File snpeff_db = "snpEff_5.2/data.zip"
     }
-
 
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
@@ -141,6 +145,52 @@ workflow FluGenotyping {
         docker = "nanozoo/bracken:2.8--dcb3e47"
     }
 
+    call snpeff.Minimap2 as minimap_flu {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        HA_ref = HA_ref,
+        NA_ref = NA_ref,
+        threads = threads,
+        docker = "staphb/minimap2:latest"
+    }
+
+    call snpeff.Samtools as samtools_flu_ha {
+        input:
+        ref = HA_ref,
+        sam = minimap_flu.ha_sam,
+        docker = "pegi3s/samtools_bcftools:latest"
+    }
+
+    call snpeff.Samtools as samtools_flu_na {
+        input:
+        ref = NA_ref,
+        sam = minimap_flu.na_sam,
+        docker = "pegi3s/samtools_bcftools:latest"
+    }
+
+    if (samtools_flu_ha.proceed == "yes") {
+      call snpeff.Snpeff as snpeff_ha {
+          input:
+          snpeff_config = snpeff_config,
+          snpeff_db = snpeff_db,
+          ref = HA_ref,
+          vcf_file = samtools_flu_ha.filtered_vsf,
+          docker = "snpeff:5.2"
+      }
+    }
+
+    if (samtools_flu_na.proceed == "yes") {
+      call snpeff.Snpeff as snpeff_na {
+          input:
+          snpeff_config = snpeff_config,
+          snpeff_db = snpeff_db,
+          ref = NA_ref,
+          vcf_file = samtools_flu_na.filtered_vsf,
+          docker = "snpeff:5.2"
+      }
+    }
+
     call irma.Irma as irma_flu {
         input:
         trim_R1 = host_filter.host_filtered_fastq_1,
@@ -210,5 +260,15 @@ workflow FluGenotyping {
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
+        File? HA_vsf = samtools_flu_ha.filtered_vsf
+        File? NA_vsf = samtools_flu_na.filtered_vsf
+        File? HA_consensus_fasta = samtools_flu_ha.consensus_fasta
+        File? NA_consensus_fasta = samtools_flu_na.consensus_fasta
+        File? HA_count_txt = samtools_flu_ha.count_txt
+        File? NA_count_txt = samtools_flu_na.count_txt
+        File? HA_snpeff_vcf = snpeff_ha.snpeff_vcf
+        File? HA_snpeff_csv = snpeff_ha.snpeff_csv
+        File? NA_snpeff_vcf = snpeff_na.snpeff_vcf
+        File? NA_snpeff_csv = snpeff_na.snpeff_csv
     }
 }
