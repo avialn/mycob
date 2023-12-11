@@ -681,7 +681,7 @@ task blast {
 
     command <<<
         set -ex -o pipefail
-
+        exit
         /opt/blast/ncbi-blast-2.9.0+/bin/blastn \
         -query ~{contigs} \
         -db /home/cromwell/mycob-ref/blast/nt_prok \
