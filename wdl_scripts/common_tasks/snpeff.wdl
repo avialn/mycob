@@ -5,8 +5,7 @@ task Minimap2 {
     input {
         File? fastq_1
         File? fastq_2
-        File HA_ref
-        File NA_ref
+        File ref
         Int threads
         String docker
     }
@@ -17,15 +16,18 @@ task Minimap2 {
         minimap2 -t ~{threads} \
         -ax sr -c \
         --secondary=yes \
-        ~{HA_ref} \
-        ~{fastq_1} ~{fastq_2} > ha.sam
+        ~{ref} \
+        ~{fastq_1} ~{fastq_2} > file.sam
 
-         minimap2 -t ~{threads} \
-        -ax sr -c \
-        --secondary=yes \
-        ~{NA_ref} \
-        ~{fastq_1} ~{fastq_2} > na.sam
+        matched_count=$(grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1}')
 
+        if [ -z "$matched_count" ]; then
+            echo "No aligned reads" > proceed.txt
+            echo "0" > matched_count.txt
+        else
+            echo "yes" > proceed.txt
+            echo $matched_count > matched_count.txt
+        fi
 
     >>>
 
@@ -34,8 +36,9 @@ task Minimap2 {
     }
 
     output {
-      File ha_sam = "ha.sam"
-      File na_sam = "na.sam"
+        File file_sam = "file.sam"
+        String proceed = read_string("proceed.txt")
+        File matched_count_txt = "matched_count.txt"
     }
 }
 
@@ -52,42 +55,34 @@ task Samtools {
     command <<<
         set -ex -o pipefail
 
-        matched_count=$(samtools view -c -F 4 ~{sam})
+        samtools view -bo file.bam ~{sam}
+        samtools sort -o sorted.bam file.bam
+        samtools index sorted.bam
 
-        if [ "$matched_count" -gt 0 ]; then
-          echo "yes" > proceed.txt
+        # count reads aligned to ref
+        samtools view -F 4 sorted.bam | cut -f 3 | sort | uniq -c | sort -rnk1 > count.txt
 
-          samtools view -bo file.bam ~{sam}
-          samtools sort -o sorted.bam file.bam
-          samtools index sorted.bam
+        # drop "/n" in in the reference fasta
+        awk '/^>/ {if (NR!=1) {printf("\n%s\n", $0)} \
+        else {printf("%s\n",$0)}; next} { printf("%s",$0)} END {printf("\n")}' \
+        ~{ref} > ref.fasta
 
-          # отсортируем сколько ридов выравнялось на ref
-          samtools view -F 4 sorted.bam | cut -f 3 | sort | uniq -c | sort -rnk1 > count.txt
-          #25561 A_HA_H3
+        # filter only reads aligned to reference
+        header=$(grep -o -P '^>\K[^ ]+' ~{ref})
+        samtools view -h -F 4 sorted.bam $header > filtered.sam
 
-          # избавляемся от символов новой строки в референсной фасте
-          awk '/^>/ {if (NR!=1) {printf("\n%s\n", $0)} \
-          else {printf("%s\n",$0)}; next} { printf("%s",$0)} END {printf("\n")}' \
-          ~{ref} > ref.fasta
+        samtools view -bo filtered.bam filtered.sam
+        samtools sort filtered.bam -o sorted.bam
+        samtools index sorted.bam
 
-          header=$(grep -o -P '^>\K[^ ]+' ~{ref})
-          samtools view -h -F 4 sorted.bam $header > filtered.sam
-          #"A_HA_H3" заголовок референсной фасты
+        samtools mpileup -uf ~{ref} sorted.bam | bcftools call -mv -Oz -o file.bcf
+        bcftools index file.bcf
+        bcftools consensus -f ~{ref} file.bcf > consensus.fasta
+        bcftools view -Ov -o file.vcf file.bcf
+        bcftools view file.bcf | bcftools filter -i 'DP>~{min_cov}' > filtered.vcf
 
-          samtools view -bo filtered.bam filtered.sam
-          samtools sort filtered.bam -o sorted.bam
-          samtools index sorted.bam
+        rm file.bam file.bcf file.bcf.csi filtered.bam filtered.sam ref.fasta sorted.bam sorted.bam.bai
 
-          samtools mpileup -uf ~{ref} sorted.bam | bcftools call -mv -Oz -o file.bcf
-          bcftools index file.bcf
-          bcftools consensus -f ~{ref} file.bcf > consensus.fasta
-          bcftools view file.bcf | bcftools filter -i 'DP>~{min_cov}' > filtered.vcf
-
-          rm file.bam file.bcf file.bcf.csi filtered.bam filtered.sam ref.fasta sorted.bam sorted.bam.bai
-
-        else
-          echo "no_matched_reads_for_ref" > proceed.txt
-        fi
    >>>
 
     runtime {
@@ -95,7 +90,7 @@ task Samtools {
     }
 
     output {
-        String proceed = read_string("proceed.txt")
+        File? file_vsf = "file.vcf"
         File? filtered_vsf = "filtered.vcf"
         File? consensus_fasta = "HA_consensus.fasta"
         File? count_txt = "count.txt"
@@ -152,6 +147,5 @@ task Snpeff {
     }
 
 }
-
 
 
