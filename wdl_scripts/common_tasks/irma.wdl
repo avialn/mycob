@@ -548,7 +548,7 @@ task Report {
                             subtype_allsegments = subtype_counts.idxmax()
 
                         results_summary = {
-                            "blast_subtype_HaNa": subtype,
+                            "blast_subtype_HANA": subtype,
                             "blast_subtype_allsegments": subtype_allsegments,
                             "virus_name_HA": virus_name_HA,
                             "virus_name_NA": virus_name_NA,
