@@ -7,6 +7,7 @@ import "./common_tasks/kraken2.wdl" as kraken2
 import "./common_tasks/irma.wdl" as irma
 import "./common_tasks/nextclade.wdl" as nextclade
 import "./common_tasks/snpeff.wdl" as snpeff
+import "./common_tasks/summary_report.wdl" as summary_report
 
 workflow FluGenotyping {
 
@@ -252,19 +253,51 @@ workflow FluGenotyping {
             docker = "python:4.4"
         }
 
-        call nextclade.Nextclade as nextclade_flu {
+        call nextclade.Nextclade as nextclade_flu_ha {
             input:
-            ha_fasta = irma_flu.ha_fasta,
-            na_fasta = irma_flu.na_fasta,
+            fasta = irma_flu.ha_fasta,
+            ref_name = "HA_wis_67_2022",
             docker = "nextclade:3.3"
         }
 
-        call nextclade.NextcladeParse as nextclade_parse_flu {
+        if (nextclade_flu_ha.proceed == "yes") {
+
+            call nextclade.NextcladeParse as nextclade_parse_flu_ha {
+                input:
+                nextclade_tsv = nextclade_flu_ha.nextclade_tsv,
+                search_antigenic_mut = "yes",
+                ref_name = "HA_wis_67_2022",
+                docker = "python:4.4"
+            }
+        }
+
+        call nextclade.Nextclade as nextclade_flu_na {
             input:
-            HA_tsv = nextclade_flu.HA_nextclade,
-            NA_tsv = nextclade_flu.NA_nextclade,
-            report = report_flu.report,
-            antigenic_frame = "/home/admin/cromwell_flu/inputs/VD_6/antigenic_frame.txt",
+            fasta = irma_flu.na_fasta,
+            ref_name = "NA_wis_67_2022",
+            docker = "nextclade:3.3"
+        }
+
+        if (nextclade_flu_na.proceed == "yes") {
+            call nextclade.NextcladeParse as nextclade_parse_flu_na {
+                input:
+                nextclade_tsv = nextclade_flu_na.nextclade_tsv,
+                search_antigenic_mut = "no",
+                ref_name = "NA_wis_67_2022",
+                docker = "python:4.4"
+            }
+        }
+    }
+
+    if (irma_flu.proceed == "yes" || minimap_flu_ha.proceed == "yes" || minimap_flu_na.proceed == "yes") {
+        call summary_report.SummaryReport as summary_report_flu {
+            input:
+            sample_name = sample_name,
+            irma_report = report_flu.report,
+            snpeff_HA_report = parse_snpeff_ha.snpeff_json,
+            snpeff_NA_report = parse_snpeff_na.snpeff_json,
+            nextclade_HA_report = nextclade_parse_flu_ha.nextclade_json,
+            nextclade_NA_report = nextclade_parse_flu_na.nextclade_json,
             docker = "python:4.4"
         }
     }
@@ -282,6 +315,10 @@ workflow FluGenotyping {
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
+        File? HA_nextclade_tsv = nextclade_flu_ha.nextclade_tsv
+        File? NA_nextclade_tsv = nextclade_flu_na.nextclade_tsv
+        File? HA_nextclade_json = nextclade_parse_flu_ha.nextclade_json
+        File? NA_nextclade_json = nextclade_parse_flu_ha.nextclade_json
         File? HA_vsf = samtools_flu_ha.file_vsf
         File? NA_vsf = samtools_flu_na.file_vsf
         File? HA_filtered_vsf = samtools_flu_ha.filtered_vsf
@@ -298,6 +335,6 @@ workflow FluGenotyping {
         File? NA_snpeff_csv = snpeff_na.snpeff_csv
         File? HA_snpeff_json = parse_snpeff_ha.snpeff_json
         File? NA_snpeff_json = parse_snpeff_na.snpeff_json
+        File? summary_report_json = summary_report_flu.report_json
     }
-
 }
