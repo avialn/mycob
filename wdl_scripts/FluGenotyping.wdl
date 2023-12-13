@@ -179,6 +179,13 @@ workflow FluGenotyping {
             vcf_file = samtools_flu_ha.filtered_vsf,
             docker = "snpeff:5.2"
         }
+
+        call snpeff.ParseSnpeff as parse_snpeff_ha {
+            input:
+            snpeff_csv = snpeff_ha.snpeff_csv,
+            ref_name = snpeff_ha.ref_name,
+            docker = "python:4.4"
+        }
     }
 
     if (minimap_flu_na.proceed == "yes") {
@@ -196,6 +203,13 @@ workflow FluGenotyping {
             ref = NA_ref,
             vcf_file = samtools_flu_na.filtered_vsf,
             docker = "snpeff:5.2"
+        }
+
+        call snpeff.ParseSnpeff as parse_snpeff_na {
+            input:
+            snpeff_csv = snpeff_na.snpeff_csv,
+            ref_name = snpeff_na.ref_name,
+            docker = "python:4.4"
         }
     }
 
@@ -268,20 +282,22 @@ workflow FluGenotyping {
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
-        File HA_matched_count_txt = minimap_flu_ha.matched_count_txt
-        File NA_matched_count_txt = minimap_flu_na.matched_count_txt
         File? HA_vsf = samtools_flu_ha.file_vsf
         File? NA_vsf = samtools_flu_na.file_vsf
         File? HA_filtered_vsf = samtools_flu_ha.filtered_vsf
         File? NA_filtered_vsf = samtools_flu_na.filtered_vsf
         File? HA_consensus_fasta = samtools_flu_ha.consensus_fasta
         File? NA_consensus_fasta = samtools_flu_na.consensus_fasta
-        File? HA_count_txt = samtools_flu_ha.count_txt
-        File? NA_count_txt = samtools_flu_na.count_txt
+        File? HA_matched_count_txt = samtools_flu_ha.matched_count_txt
+        File? NA_matched_count_txt = samtools_flu_na.matched_count_txt
+        File? HA_total_count_txt = samtools_flu_ha.total_count_txt
+        File? NA_total_count_txt = samtools_flu_na.total_count_txt
         File? HA_snpeff_vcf = snpeff_ha.snpeff_vcf
         File? NA_snpeff_vcf = snpeff_na.snpeff_vcf
         File? HA_snpeff_csv = snpeff_ha.snpeff_csv
         File? NA_snpeff_csv = snpeff_na.snpeff_csv
+        File? HA_snpeff_json = parse_snpeff_ha.snpeff_json
+        File? NA_snpeff_json = parse_snpeff_na.snpeff_json
     }
 
 }
