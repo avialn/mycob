@@ -19,12 +19,20 @@ task Minimap2 {
         ~{ref} \
         ~{fastq_1} ~{fastq_2} > file.sam
 
+        ref_name=$(basename "~{ref}" .fasta)
+
+        echo $ref_name > ref_name.txt
+
+        # STATS counting
+        grep -v '^@' file.sam | wc -l > total_count.txt
         matched_count=$(grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1}')
 
         if [ -z "$matched_count" ]; then
             echo "No aligned reads" > proceed.txt
+            echo "0" > matched_count.txt
         else
             echo "yes" > proceed.txt
+            echo $matched_count > matched_count.txt
         fi
 
     >>>
@@ -36,6 +44,9 @@ task Minimap2 {
     output {
         File file_sam = "file.sam"
         String proceed = read_string("proceed.txt")
+        String ref_name = read_string("ref_name.txt")
+        String total_count = read_string("total_count.txt")
+        String matched_count = read_string("matched_count.txt")
     }
 }
 
@@ -44,7 +55,7 @@ task Samtools {
     input {
         File ref
         File sam
-        Int min_cov=10
+        Int min_cov=5
         String docker
 
     }
@@ -56,16 +67,20 @@ task Samtools {
         samtools sort -o sorted.bam file.bam
         samtools index sorted.bam
 
-        # count reads aligned to ref
-        samtools view -c sorted.bam > total_count.txt
-        samtools view -F 4 sorted.bam | cut -f 3 | sort | uniq -c | sort -rnk1 > matched_count.txt
+        # STATS length
+        samtools depth sorted.bam > coverage.txt # <reference name> <position> <coverage depth>
+        coverage=$(cat coverage.txt| wc -l) # how many positions are covered by reads
+        ref_length=$(cat ~{ref} | awk '/^[^>]/ {seq = seq $0} END {print length(seq)}') # reference length
+        echo $coverage > coverage.txt
+        echo $ref_length > ref_length.txt
+        echo "scale=2; ($coverage / $ref_length) * 100" | bc > coverage_percentage.txt # % coverage length
 
         # drop "/n" in in the reference fasta
-        awk '/^>/ {if (NR!=1) {printf("\n%s\n", $0)} \
-        else {printf("%s\n",$0)}; next} { printf("%s",$0)} END {printf("\n")}' \
-        ~{ref} > ref.fasta
+        #awk '/^>/ {if (NR!=1) {printf("\n%s\n", $0)} \
+        #else {printf("%s\n",$0)}; next} { printf("%s",$0)} END {printf("\n")}' \
+        #~{ref} > ref.fasta
 
-        # filter only reads aligned to reference
+        # filter only reads aligned to reference by header in reference fasta
         header=$(grep -o -P '^>\K[^ ]+' ~{ref})
         samtools view -h -F 4 sorted.bam $header > filtered.sam
 
@@ -73,14 +88,16 @@ task Samtools {
         samtools sort filtered.bam -o sorted.bam
         samtools index sorted.bam
 
-        samtools mpileup -uf ~{ref} sorted.bam | bcftools call -mv -Oz -o file.bcf
+        # variant calling
+        bcftools mpileup -f ~{ref} sorted.bam | bcftools call -mv -Ob -o file.bcf
         bcftools index file.bcf
         bcftools consensus -f ~{ref} file.bcf > consensus.fasta
         bcftools view -Ov -o file.vcf file.bcf
+
+        # filter only variants with a minimum coverage of 5
         bcftools view file.bcf | bcftools filter -i 'DP>~{min_cov}' > filtered.vcf
 
-        rm file.bam file.bcf file.bcf.csi filtered.bam filtered.sam ref.fasta sorted.bam sorted.bam.bai
-
+        rm file.bam file.bcf file.bcf.csi filtered.bam filtered.sam sorted.bam sorted.bam.bai
    >>>
 
     runtime {
@@ -91,11 +108,52 @@ task Samtools {
         File? file_vsf = "file.vcf"
         File? filtered_vsf = "filtered.vcf"
         File? consensus_fasta = "HA_consensus.fasta"
-        File? matched_count_txt = "matched_count.txt"
-        File? total_count_txt = "total_count.txt"
+        String ref_length_bp= read_string("ref_length.txt")
+        String coverage_bp= read_string("coverage.txt")
+        String coverage_percentage = read_string("coverage_percentage.txt")
     }
 
 }
+
+task MinimapQC {
+
+    input {
+        String sample_name
+        String ref_name
+        String total_count
+        String matched_count
+        String ref_length_bp
+        String coverage_bp
+        String coverage_percentage
+        String docker
+    }
+
+    command <<<
+        set -ex -o pipefail
+
+        python3 <<CODE
+
+        import json
+
+        data = {
+            "minimap_counting": "~{matched_count} from ~{total_count} reads were aligned to the ~{ref_name}",
+            "minimap_coverage": "~{coverage_percentage}% of the ~{ref_name} length was covered by reads (~{coverage_bp} from ~{ref_length_bp})"
+        }
+
+        with open("~{sample_name}_minimap_qc.json", "w") as json_file:
+            json.dump(data, json_file, indent=4)
+        CODE
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File qc_json = "~{sample_name}_minimap_qc.json"
+    }
+}
+
 
 task Snpeff {
 
@@ -248,7 +306,6 @@ task ParseSnpeff {
        File snpeff_json = "snpeff.json"
     }
 }
-
 
 
 

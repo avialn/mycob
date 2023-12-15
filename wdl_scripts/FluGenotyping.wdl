@@ -169,7 +169,7 @@ workflow FluGenotyping {
             input:
             ref = HA_ref,
             sam = minimap_flu_ha.file_sam,
-            docker = "pegi3s/samtools_bcftools:latest"
+            docker = "samtools_bcftoolss:1.19"
         }
 
         call snpeff.Snpeff as snpeff_ha {
@@ -187,6 +187,18 @@ workflow FluGenotyping {
             ref_name = snpeff_ha.ref_name,
             docker = "python:4.4"
         }
+
+        call snpeff.MinimapQC as minimap_qc_ha {
+            input:
+            sample_name = sample_name,
+            ref_name = minimap_flu_ha.ref_name,
+            total_count = minimap_flu_ha.total_count,
+            matched_count = minimap_flu_ha.matched_count,
+            ref_length_bp = samtools_flu_ha.ref_length_bp,
+            coverage_bp = samtools_flu_ha.coverage_bp,
+            coverage_percentage = samtools_flu_ha.coverage_percentage,
+            docker = "python:4.4"
+        }
     }
 
     if (minimap_flu_na.proceed == "yes") {
@@ -194,7 +206,7 @@ workflow FluGenotyping {
             input:
             ref = NA_ref,
             sam = minimap_flu_na.file_sam,
-            docker = "pegi3s/samtools_bcftools:latest"
+            docker = "samtools_bcftoolss:1.19"
         }
 
         call snpeff.Snpeff as snpeff_na {
@@ -210,6 +222,18 @@ workflow FluGenotyping {
             input:
             snpeff_csv = snpeff_na.snpeff_csv,
             ref_name = snpeff_na.ref_name,
+            docker = "python:4.4"
+        }
+
+        call snpeff.MinimapQC as minimap_qc_na {
+            input:
+            sample_name = sample_name,
+            ref_name = minimap_flu_na.ref_name,
+            total_count = minimap_flu_na.total_count,
+            matched_count = minimap_flu_na.matched_count,
+            ref_length_bp = samtools_flu_na.ref_length_bp,
+            coverage_bp = samtools_flu_na.coverage_bp,
+            coverage_percentage = samtools_flu_na.coverage_percentage,
             docker = "python:4.4"
         }
     }
@@ -325,10 +349,6 @@ workflow FluGenotyping {
         File? NA_filtered_vsf = samtools_flu_na.filtered_vsf
         File? HA_consensus_fasta = samtools_flu_ha.consensus_fasta
         File? NA_consensus_fasta = samtools_flu_na.consensus_fasta
-        File? HA_matched_count_txt = samtools_flu_ha.matched_count_txt
-        File? NA_matched_count_txt = samtools_flu_na.matched_count_txt
-        File? HA_total_count_txt = samtools_flu_ha.total_count_txt
-        File? NA_total_count_txt = samtools_flu_na.total_count_txt
         File? HA_snpeff_vcf = snpeff_ha.snpeff_vcf
         File? NA_snpeff_vcf = snpeff_na.snpeff_vcf
         File? HA_snpeff_csv = snpeff_ha.snpeff_csv
@@ -336,5 +356,7 @@ workflow FluGenotyping {
         File? HA_snpeff_json = parse_snpeff_ha.snpeff_json
         File? NA_snpeff_json = parse_snpeff_na.snpeff_json
         File? summary_report_json = summary_report_flu.report_json
+        File? HA_minimap_qc_json = minimap_qc_ha.qc_json
+        File? NA_minimap_qc_json = minimap_qc_na.qc_json
     }
 }
