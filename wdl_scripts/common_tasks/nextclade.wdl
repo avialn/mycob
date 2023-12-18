@@ -13,20 +13,22 @@ task Nextclade {
     command <<<
         set -ex -o pipefail
 
-        if [ ~{len_array} == 0 ]; then
-            echo "No fasta files" > proceed.txt
-        else
-            echo "yes" > proceed.txt
-            /opt/nextclade/nextclade run \
-            --input-tree=/opt/nextclade/tree.json \
-            --input-gene-map=/opt/nextclade/~{ref_name}.gff \
-            --input-qc-config=/opt/nextclade/qc.json \
-            --input-pcr-primers=/opt/nextclade/primers.csv \
-            --input-virus-properties=/opt/nextclade/virus_properties.json \
-            --input-ref=/opt/nextclade/~{ref_name}.fasta \
-            --output-tsv nextclade.tsv \
-            ~{sep=' ' fasta}
+        if [ ~{len_array} != 0 ]; then
+          proceed="yes"
+          /opt/nextclade/nextclade run \
+          --input-tree=/opt/nextclade/tree.json \
+          --input-gene-map=/opt/nextclade/~{ref_name}.gff \
+          --input-qc-config=/opt/nextclade/qc.json \
+          --input-pcr-primers=/opt/nextclade/primers.csv \
+          --input-virus-properties=/opt/nextclade/virus_properties.json \
+          --input-ref=/opt/nextclade/~{ref_name}.fasta \
+          --output-tsv nextclade.tsv \
+          ~{sep=' ' fasta}
+          cov=$(awk -F'\t' 'NR == 2 {print $19}' nextclade.tsv)
         fi
+
+        echo $proceed > proceed.txt
+        echo $cov > coverage_percentage.txt
     >>>
 
     runtime {
@@ -36,6 +38,7 @@ task Nextclade {
     output {
         File? nextclade_tsv = "nextclade.tsv"
         String proceed = read_string("proceed.txt")
+        String coverage_percentage = read_string("coverage_percentage.txt")
     }
 }
 
@@ -110,14 +113,14 @@ task NextcladeParse {
             if search_antigenic_mut == "yes":
                 with open("nextclade.json", 'w') as json_file:
                     data = {
-                        f"mutations_to_{ref_name}_nextclade" : mut,
-                        f"antigenic_site_mutations_to_{ref_name}_nextclade" : ant_mut
+                        f"aaSubstitutions_to_{ref_name}_nextclade" : mut,
+                        f"antigenic_site_aaSubstitutions_to_{ref_name}_nextclade" : ant_mut
                     }
                     json.dump(data, json_file, indent=4)
             else:
                 with open("nextclade.json", 'w') as json_file:
                     data = {
-                        f"mutations_to_{ref_name}_nextclade" : mut
+                        f"aaSubstitutions_to_{ref_name}_nextclade" : mut
                     }
                     json.dump(data, json_file, indent=4)
 
