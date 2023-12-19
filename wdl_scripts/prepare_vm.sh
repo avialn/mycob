@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo shutdown -h +120
+sudo shutdown -h +360
 export USER_ID=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/attributes/user-id)
 export TASK_ID=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/attributes/task-id)
 export VM_NAME=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/name)
