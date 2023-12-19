@@ -28,6 +28,7 @@ workflow processing {
         File? adapter_r = "/home/cromwell/mycob-ref/rsv_full/right_primers.fasta"
         File index_tar = "/home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar"
         File card_json = "/home/cromwell/mycob-ref/amr/CARD/card.json"
+        File kraken2_standard_8gb = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz"
         Int min_contig_length = 500
         Int lines_number = length(Files)
     }
