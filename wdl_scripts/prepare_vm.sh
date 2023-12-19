@@ -140,6 +140,9 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp /home/cromwell/mycob-cr
 tar cfv - \
 	--hard-dereference \
 	--exclude='GRCh38_ERCC.bowtie2.tar' \
+	--exclude='GRCh38_transcriptome.bowtie2.tar' \
+	--exclude='k2_standard_08gb_20231009.tar.gz' \
+	--exclude='kraken2/k2_viral_20231009.tar.gz' \
     --exclude='1000G_phase1.snps.high_confidence.hg38.vcf.gz' \
 	--exclude='1000G_phase1.snps.high_confidence.hg38.vcf.gz.tbi' \
 	--exclude='1000g_pon.hg38.vcf.gz' \
