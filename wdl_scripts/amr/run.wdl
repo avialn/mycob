@@ -5,6 +5,7 @@ version 1.0
 #https://chanzuckerberg.zendesk.com/hc/en-us/articles/15091031482644-AMR-Pipeline-Workflow
 
 import "amr_tasks.wdl" as tasks
+import "kraken2.wdl" as kraken2
 import "yandex_utilities.wdl" as Utils
 #import "../common_tasks/amr_tasks.wdl" as tasks
 #import "../common_tasks/yandex_utilities.wdl" as Utils
@@ -105,6 +106,16 @@ workflow processing {
         bowttie2_output_sam = bowtie2_filter.output_sam,
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/samtools:1.9"
+    }
+
+    call kraken2.Kraken2 as kraken2 {
+        input:
+        fastq_1 = samtools_filter.host_filtered_fastq_1,
+        fastq_2 = samtools_filter.host_filtered_fastq_2,
+        sample_name = sample_name,
+        kraken2_classifier = kraken2_standard_8gb,
+        threads = 1,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
     }
 
     call tasks.RgiBwt as rig_bwt {
