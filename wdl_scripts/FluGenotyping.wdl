@@ -155,15 +155,6 @@ workflow FluGenotyping {
         docker = "staphb/minimap2:latest"
     }
 
-    call snpeff.Minimap2 as minimap_flu_na {
-        input:
-        fastq_1 = host_filter.host_filtered_fastq_1,
-        fastq_2 = host_filter.host_filtered_fastq_2,
-        ref = NA_ref,
-        threads = threads,
-        docker = "staphb/minimap2:latest"
-    }
-
     if (minimap_flu_ha.proceed == "yes") {
         call snpeff.Samtools as samtools_flu_ha {
             input:
@@ -188,17 +179,28 @@ workflow FluGenotyping {
             docker = "python:4.4"
         }
 
-        call snpeff.MinimapQC as minimap_qc_ha {
-            input:
-            sample_name = sample_name,
-            ref_name = minimap_flu_ha.ref_name,
-            total_count = minimap_flu_ha.total_count,
-            matched_count = minimap_flu_ha.matched_count,
-            ref_length_bp = samtools_flu_ha.ref_length_bp,
-            coverage_bp = samtools_flu_ha.coverage_bp,
-            coverage_percentage = samtools_flu_ha.coverage_percentage,
-            docker = "python:4.4"
-        }
+    }
+
+    call snpeff.MinimapQC as minimap_qc_ha {
+        input:
+        sample_name = sample_name,
+        ref_name = minimap_flu_ha.ref_name,
+        total_count = minimap_flu_ha.total_count,
+        matched_count = minimap_flu_ha.matched_count,
+        alignment_done = minimap_flu_ha.proceed,
+        ref_length_bp = samtools_flu_ha.ref_length_bp,
+        coverage_bp = samtools_flu_ha.coverage_bp,
+        coverage_percentage = samtools_flu_ha.coverage_percentage,
+        docker = "python:4.4"
+    }
+
+    call snpeff.Minimap2 as minimap_flu_na {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        ref = NA_ref,
+        threads = threads,
+        docker = "staphb/minimap2:latest"
     }
 
     if (minimap_flu_na.proceed == "yes") {
@@ -224,18 +226,19 @@ workflow FluGenotyping {
             ref_name = snpeff_na.ref_name,
             docker = "python:4.4"
         }
+    }
 
-        call snpeff.MinimapQC as minimap_qc_na {
-            input:
-            sample_name = sample_name,
-            ref_name = minimap_flu_na.ref_name,
-            total_count = minimap_flu_na.total_count,
-            matched_count = minimap_flu_na.matched_count,
-            ref_length_bp = samtools_flu_na.ref_length_bp,
-            coverage_bp = samtools_flu_na.coverage_bp,
-            coverage_percentage = samtools_flu_na.coverage_percentage,
-            docker = "python:4.4"
-        }
+    call snpeff.MinimapQC as minimap_qc_na {
+        input:
+        sample_name = sample_name,
+        ref_name = minimap_flu_na.ref_name,
+        total_count = minimap_flu_na.total_count,
+        matched_count = minimap_flu_na.matched_count,
+        alignment_done = minimap_flu_na.proceed,
+        ref_length_bp = samtools_flu_na.ref_length_bp,
+        coverage_bp = samtools_flu_na.coverage_bp,
+        coverage_percentage = samtools_flu_na.coverage_percentage,
+        docker = "python:4.4"
     }
 
     call irma.Irma as irma_flu {
@@ -327,36 +330,60 @@ workflow FluGenotyping {
     }
 
     output {
+
+        # preprocessing: fastqc, trimmomatic, cutadapt, host-filtering
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
         File fastqc_row_R2_html = fastqc_row_R2.summary_html
         File fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
         File fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
         File preprocessing_qc_json = preprocessing_qc.report_json
-        File? flu_qc_json = irma_qc_flu.irma_qc_json
-        File? flu_json = report_flu.report
+
+        # virus genotyping: irma, blasn
+        File? irma_qc_json = irma_qc_flu.irma_qc_json
+        File? irma_report_json = report_flu.report
+
+        # virus genotyping: kraken, bracken, krona
         File kraken_txt = kraken2.report_txt
         File bracken_txt = bracken.report_txt
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
+
+        # finding aaSubstitutions: nextclade of irma's fasta
         File? HA_nextclade_tsv = nextclade_flu_ha.nextclade_tsv
         File? NA_nextclade_tsv = nextclade_flu_na.nextclade_tsv
-        File? HA_nextclade_json = nextclade_parse_flu_ha.nextclade_json
-        File? NA_nextclade_json = nextclade_parse_flu_ha.nextclade_json
+        File? HA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        File? NA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        String? HA_nextclade_coverage_percentage = nextclade_flu_ha.coverage_percentage
+        String? NA_nextclade_coverage_percentage = nextclade_flu_na.coverage_percentage
+
+        # finding mutations (aaSubstitutions included): snpeff of minimap's fasta
+        String minimap_count = minimap_flu_ha.total_count # host_filtered x 2
+        String HA_minimap_matched_count = minimap_flu_ha.matched_count
+        String NA_minimap_matched_count = minimap_flu_na.matched_count
+        String? HA_ref_length_bp = samtools_flu_ha.ref_length_bp
+        String? NA_ref_length_bp = samtools_flu_na.ref_length_bp
+        String? HA_minimap_coverage_bp = samtools_flu_ha.coverage_bp
+        String? NA_minimap_coverage_bp = samtools_flu_na.coverage_bp
+        String? HA_minimap_coverage_percentage = samtools_flu_ha.coverage_percentage
+        String? NA_minimap_coverage_percentage = samtools_flu_na.coverage_percentage
+        File? HA_minimap_qc_json = minimap_qc_ha.qc_json
+        File? NA_minimap_qc_json = minimap_qc_na.qc_json
         File? HA_vsf = samtools_flu_ha.file_vsf
         File? NA_vsf = samtools_flu_na.file_vsf
-        File? HA_filtered_vsf = samtools_flu_ha.filtered_vsf
-        File? NA_filtered_vsf = samtools_flu_na.filtered_vsf
+        File? HA_filtered_vsf = samtools_flu_ha.filtered_vsf # min_cov=5
+        File? NA_filtered_vsf = samtools_flu_na.filtered_vsf # min_cov=5
         File? HA_consensus_fasta = samtools_flu_ha.consensus_fasta
         File? NA_consensus_fasta = samtools_flu_na.consensus_fasta
         File? HA_snpeff_vcf = snpeff_ha.snpeff_vcf
         File? NA_snpeff_vcf = snpeff_na.snpeff_vcf
         File? HA_snpeff_csv = snpeff_ha.snpeff_csv
         File? NA_snpeff_csv = snpeff_na.snpeff_csv
-        File? HA_snpeff_json = parse_snpeff_ha.snpeff_json
-        File? NA_snpeff_json = parse_snpeff_na.snpeff_json
+        File? HA_snpeff_report_json = parse_snpeff_ha.snpeff_json
+        File? NA_snpeff_report_json = parse_snpeff_na.snpeff_json
+
+        # final report: irma, nextclade, snpeff
         File? summary_report_json = summary_report_flu.report_json
-        File? HA_minimap_qc_json = minimap_qc_ha.qc_json
-        File? NA_minimap_qc_json = minimap_qc_na.qc_json
+
     }
 }

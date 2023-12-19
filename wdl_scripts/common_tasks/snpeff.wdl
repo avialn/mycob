@@ -122,9 +122,10 @@ task MinimapQC {
         String ref_name
         String total_count
         String matched_count
-        String ref_length_bp
-        String coverage_bp
-        String coverage_percentage
+        String alignment_done
+        String? ref_length_bp
+        String? coverage_bp
+        String? coverage_percentage
         String docker
     }
 
@@ -135,10 +136,15 @@ task MinimapQC {
 
         import json
 
-        data = {
-            "minimap_counting": "~{matched_count} from ~{total_count} reads were aligned to the ~{ref_name}",
-            "minimap_coverage": "~{coverage_percentage}% of the ~{ref_name} length was covered by reads (~{coverage_bp} from ~{ref_length_bp})"
-        }
+        if "~{alignment_done}" == "yes":
+            data = {
+                "minimap_counting": "~{matched_count} from ~{total_count} reads were aligned to the ~{ref_name}",
+                "minimap_coverage": "~{coverage_percentage}% of the ~{ref_name} length was covered by reads (~{coverage_bp} from ~{ref_length_bp})"
+            }
+        else:
+            data = {
+                "minimap_counting": "~{matched_count} from ~{total_count} reads were aligned to the ~{ref_name}"
+            }
 
         with open("~{sample_name}_minimap_qc.json", "w") as json_file:
             json.dump(data, json_file, indent=4)
@@ -306,9 +312,5 @@ task ParseSnpeff {
        File snpeff_json = "snpeff.json"
     }
 }
-
-
-
-
 
 
