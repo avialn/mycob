@@ -230,8 +230,8 @@ workflow processing {
         File primary_AMR_report_tsv = report.synthesized_report_tsv
         File motus_output = motus.out
         File abricate_tsv = abricate.out
-        File abritamr_tsv = abritamr.out
-        File abritamr_vir = abritamr.virulence
+        File? abritamr_tsv = abritamr.out
+        File? abritamr_vir = abritamr.virulence
         File blast_res = blast.blast_res
     } 
 
