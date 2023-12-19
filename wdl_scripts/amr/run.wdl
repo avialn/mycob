@@ -5,6 +5,7 @@ version 1.0
 #https://chanzuckerberg.zendesk.com/hc/en-us/articles/15091031482644-AMR-Pipeline-Workflow
 
 import "amr_tasks.wdl" as tasks
+import "kraken2.wdl" as kraken2
 import "yandex_utilities.wdl" as Utils
 #import "../common_tasks/amr_tasks.wdl" as tasks
 #import "../common_tasks/yandex_utilities.wdl" as Utils
@@ -27,6 +28,7 @@ workflow processing {
         File? adapter_r = "/home/cromwell/mycob-ref/rsv_full/right_primers.fasta"
         File index_tar = "/home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar"
         File card_json = "/home/cromwell/mycob-ref/amr/CARD/card.json"
+        File kraken2_standard_8gb = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz"
         Int min_contig_length = 500
         Int lines_number = length(Files)
     }
@@ -105,6 +107,16 @@ workflow processing {
         bowttie2_output_sam = bowtie2_filter.output_sam,
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/samtools:1.9"
+    }
+
+    call kraken2.Kraken2 as kraken2 {
+        input:
+        fastq_1 = samtools_filter.host_filtered_fastq_1,
+        fastq_2 = samtools_filter.host_filtered_fastq_2,
+        sample_name = sample_name,
+        kraken2_classifier = kraken2_standard_8gb,
+        threads = 1,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
     }
 
     call tasks.RgiBwt as rig_bwt {
@@ -218,8 +230,8 @@ workflow processing {
         File primary_AMR_report_tsv = report.synthesized_report_tsv
         File motus_output = motus.out
         File abricate_tsv = abricate.out
-        File abritamr_tsv = abritamr.out
-        File abritamr_vir = abritamr.virulence
+        File? abritamr_tsv = abritamr.out
+        File? abritamr_vir = abritamr.virulence
         File blast_res = blast.blast_res
     } 
 

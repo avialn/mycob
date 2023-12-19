@@ -6,6 +6,8 @@ import "./common_tasks/preprocessing.wdl" as preprocessing
 import "./common_tasks/kraken2.wdl" as kraken2
 import "./common_tasks/irma.wdl" as irma
 import "./common_tasks/nextclade.wdl" as nextclade
+import "./common_tasks/snpeff.wdl" as snpeff
+import "./common_tasks/summary_report.wdl" as summary_report
 
 workflow FluGenotyping {
 
@@ -24,8 +26,11 @@ workflow FluGenotyping {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
         Int threads = 8
         File reference_fasta_flu = "reference_fasta/FLU.fasta"
+        File HA_ref = "reference_fasta/HA_wis_67_2022.fasta"
+        File NA_ref = "reference_fasta/NA_wis_67_2022.fasta"
+        File snpeff_config = "snpEff_5.2/snpEff.config"
+        File snpeff_db = "snpEff_5.2/data.zip"
     }
-
 
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
@@ -140,6 +145,101 @@ workflow FluGenotyping {
         docker = "nanozoo/bracken:2.8--dcb3e47"
     }
 
+    call snpeff.Minimap2 as minimap_flu_ha {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        ref = HA_ref,
+        threads = threads,
+        docker = "staphb/minimap2:latest"
+    }
+
+    if (minimap_flu_ha.proceed == "yes") {
+        call snpeff.Samtools as samtools_flu_ha {
+            input:
+            ref = HA_ref,
+            sam = minimap_flu_ha.file_sam,
+            docker = "samtools_bcftoolss:1.19"
+        }
+
+        call snpeff.Snpeff as snpeff_ha {
+            input:
+            snpeff_config = snpeff_config,
+            snpeff_db = snpeff_db,
+            ref = HA_ref,
+            vcf_file = samtools_flu_ha.filtered_vsf,
+            docker = "snpeff:5.2"
+        }
+
+        call snpeff.ParseSnpeff as parse_snpeff_ha {
+            input:
+            snpeff_csv = snpeff_ha.snpeff_csv,
+            ref_name = snpeff_ha.ref_name,
+            docker = "python:4.4"
+        }
+
+    }
+
+    call snpeff.MinimapQC as minimap_qc_ha {
+        input:
+        sample_name = sample_name,
+        ref_name = minimap_flu_ha.ref_name,
+        total_count = minimap_flu_ha.total_count,
+        matched_count = minimap_flu_ha.matched_count,
+        alignment_done = minimap_flu_ha.proceed,
+        ref_length_bp = samtools_flu_ha.ref_length_bp,
+        coverage_bp = samtools_flu_ha.coverage_bp,
+        coverage_percentage = samtools_flu_ha.coverage_percentage,
+        docker = "python:4.4"
+    }
+
+    call snpeff.Minimap2 as minimap_flu_na {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        ref = NA_ref,
+        threads = threads,
+        docker = "staphb/minimap2:latest"
+    }
+
+    if (minimap_flu_na.proceed == "yes") {
+        call snpeff.Samtools as samtools_flu_na {
+            input:
+            ref = NA_ref,
+            sam = minimap_flu_na.file_sam,
+            docker = "samtools_bcftoolss:1.19"
+        }
+
+        call snpeff.Snpeff as snpeff_na {
+            input:
+            snpeff_config = snpeff_config,
+            snpeff_db = snpeff_db,
+            ref = NA_ref,
+            vcf_file = samtools_flu_na.filtered_vsf,
+            docker = "snpeff:5.2"
+        }
+
+        call snpeff.ParseSnpeff as parse_snpeff_na {
+            input:
+            snpeff_csv = snpeff_na.snpeff_csv,
+            ref_name = snpeff_na.ref_name,
+            docker = "python:4.4"
+        }
+    }
+
+    call snpeff.MinimapQC as minimap_qc_na {
+        input:
+        sample_name = sample_name,
+        ref_name = minimap_flu_na.ref_name,
+        total_count = minimap_flu_na.total_count,
+        matched_count = minimap_flu_na.matched_count,
+        alignment_done = minimap_flu_na.proceed,
+        ref_length_bp = samtools_flu_na.ref_length_bp,
+        coverage_bp = samtools_flu_na.coverage_bp,
+        coverage_percentage = samtools_flu_na.coverage_percentage,
+        docker = "python:4.4"
+    }
+
     call irma.Irma as irma_flu {
         input:
         trim_R1 = host_filter.host_filtered_fastq_1,
@@ -179,35 +279,110 @@ workflow FluGenotyping {
             docker = "python:4.4"
         }
 
-        call nextclade.Nextclade as nextclade_flu {
+        call nextclade.Nextclade as nextclade_flu_ha {
             input:
-            ha_fasta = irma_flu.ha_fasta,
-            na_fasta = irma_flu.na_fasta,
+            fasta = irma_flu.ha_fasta,
+            ref_name = "HA_wis_67_2022",
             docker = "nextclade:3.3"
         }
 
-        call nextclade.NextcladeParse as nextclade_parse_flu {
+        if (nextclade_flu_ha.proceed == "yes") {
+
+            call nextclade.NextcladeParse as nextclade_parse_flu_ha {
+                input:
+                nextclade_tsv = nextclade_flu_ha.nextclade_tsv,
+                search_antigenic_mut = "yes",
+                ref_name = "HA_wis_67_2022",
+                docker = "python:4.4"
+            }
+        }
+
+        call nextclade.Nextclade as nextclade_flu_na {
             input:
-            HA_tsv = nextclade_flu.HA_nextclade,
-            NA_tsv = nextclade_flu.NA_nextclade,
-            report = report_flu.report,
-            antigenic_frame = "/home/admin/cromwell_flu/inputs/VD_6/antigenic_frame.txt",
+            fasta = irma_flu.na_fasta,
+            ref_name = "NA_wis_67_2022",
+            docker = "nextclade:3.3"
+        }
+
+        if (nextclade_flu_na.proceed == "yes") {
+            call nextclade.NextcladeParse as nextclade_parse_flu_na {
+                input:
+                nextclade_tsv = nextclade_flu_na.nextclade_tsv,
+                search_antigenic_mut = "no",
+                ref_name = "NA_wis_67_2022",
+                docker = "python:4.4"
+            }
+        }
+    }
+
+    if (irma_flu.proceed == "yes" || minimap_flu_ha.proceed == "yes" || minimap_flu_na.proceed == "yes") {
+        call summary_report.SummaryReport as summary_report_flu {
+            input:
+            sample_name = sample_name,
+            irma_report = report_flu.report,
+            snpeff_HA_report = parse_snpeff_ha.snpeff_json,
+            snpeff_NA_report = parse_snpeff_na.snpeff_json,
+            nextclade_HA_report = nextclade_parse_flu_ha.nextclade_json,
+            nextclade_NA_report = nextclade_parse_flu_na.nextclade_json,
             docker = "python:4.4"
         }
     }
 
     output {
+
+        # preprocessing: fastqc, trimmomatic, cutadapt, host-filtering
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
         File fastqc_row_R2_html = fastqc_row_R2.summary_html
         File fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
         File fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
         File preprocessing_qc_json = preprocessing_qc.report_json
-        File? flu_qc_json = irma_qc_flu.irma_qc_json
-        File? flu_json = report_flu.report
+
+        # virus genotyping: irma, blasn
+        File? irma_qc_json = irma_qc_flu.irma_qc_json
+        File? irma_report_json = report_flu.report
+
+        # virus genotyping: kraken, bracken, krona
         File kraken_txt = kraken2.report_txt
         File bracken_txt = bracken.report_txt
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
+
+        # finding aaSubstitutions: nextclade of irma's fasta
+        File? HA_nextclade_tsv = nextclade_flu_ha.nextclade_tsv
+        File? NA_nextclade_tsv = nextclade_flu_na.nextclade_tsv
+        File? HA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        File? NA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        String? HA_nextclade_coverage_percentage = nextclade_flu_ha.coverage_percentage
+        String? NA_nextclade_coverage_percentage = nextclade_flu_na.coverage_percentage
+
+        # finding mutations (aaSubstitutions included): snpeff of minimap's fasta
+        String minimap_count = minimap_flu_ha.total_count # host_filtered x 2
+        String HA_minimap_matched_count = minimap_flu_ha.matched_count
+        String NA_minimap_matched_count = minimap_flu_na.matched_count
+        String? HA_ref_length_bp = samtools_flu_ha.ref_length_bp
+        String? NA_ref_length_bp = samtools_flu_na.ref_length_bp
+        String? HA_minimap_coverage_bp = samtools_flu_ha.coverage_bp
+        String? NA_minimap_coverage_bp = samtools_flu_na.coverage_bp
+        String? HA_minimap_coverage_percentage = samtools_flu_ha.coverage_percentage
+        String? NA_minimap_coverage_percentage = samtools_flu_na.coverage_percentage
+        File? HA_minimap_qc_json = minimap_qc_ha.qc_json
+        File? NA_minimap_qc_json = minimap_qc_na.qc_json
+        File? HA_vsf = samtools_flu_ha.file_vsf
+        File? NA_vsf = samtools_flu_na.file_vsf
+        File? HA_filtered_vsf = samtools_flu_ha.filtered_vsf # min_cov=5
+        File? NA_filtered_vsf = samtools_flu_na.filtered_vsf # min_cov=5
+        File? HA_consensus_fasta = samtools_flu_ha.consensus_fasta
+        File? NA_consensus_fasta = samtools_flu_na.consensus_fasta
+        File? HA_snpeff_vcf = snpeff_ha.snpeff_vcf
+        File? NA_snpeff_vcf = snpeff_na.snpeff_vcf
+        File? HA_snpeff_csv = snpeff_ha.snpeff_csv
+        File? NA_snpeff_csv = snpeff_na.snpeff_csv
+        File? HA_snpeff_report_json = parse_snpeff_ha.snpeff_json
+        File? NA_snpeff_report_json = parse_snpeff_na.snpeff_json
+
+        # final report: irma, nextclade, snpeff
+        File? summary_report_json = summary_report_flu.report_json
+
     }
 }

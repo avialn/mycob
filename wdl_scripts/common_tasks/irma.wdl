@@ -548,7 +548,7 @@ task Report {
                             subtype_allsegments = subtype_counts.idxmax()
 
                         results_summary = {
-                            "blast_subtype_HaNa": subtype,
+                            "blast_subtype_HANA": subtype,
                             "blast_subtype_allsegments": subtype_allsegments,
                             "virus_name_HA": virus_name_HA,
                             "virus_name_NA": virus_name_NA,
@@ -635,6 +635,14 @@ task Report {
 
         ############### ROTAVIRUS
 
+        def find_G_genotype(string):
+            matches = re.findall(reg_pat_G, str(string))
+            return ",".join(matches) if matches else None
+
+        def find_P_genotype(string):
+            matches = re.findall(reg_pat_P, str(string))
+            return ",".join(matches) if matches else None
+
         def parse_blast_rotavirus (
             blast_results: Optional[str],
             rotavirus_metadata: Optional[str],
@@ -715,8 +723,11 @@ task Report {
                     df_merge = df_merge.sort_values(
                         by=["qaccver", "bitscore"], ascending=[True, False]
                     ).set_index("qaccver")
-                    reg_pat_G = r"(G\d{1,2}|G\[\d{1,2}\])" #9 segment, _VP7
+                    reg_pat_G = r"(G\d{1,2})" #9 segment, _VP7
                     reg_pat_P = r"(P\[\d{1,2}\]|P\d{1,2}|P\(\d\))" #4 segment, _VP4
+                    df_merge['G_genotype'] = df_merge['Genotype'].apply(find_G_genotype)
+                    df_merge['P_genotype'] = df_merge['Genotype'].apply(find_P_genotype)
+                    df_merge['P_genotype'] = df_merge['P_genotype'].str.replace(r'[\[\]]', '', regex=True)
                     subtype_G, virus_name_G = parse_G_P(9, df_merge, reg_pat_G)
                     subtype_P, virus_name_P = parse_G_P(4, df_merge, reg_pat_P)
                     subtype = get_subtype_value_GP(subtype_G, subtype_P)
@@ -729,7 +740,6 @@ task Report {
                         else:
                             subtype_allsegments = subtype_counts.idxmax()
                             subtype_allsegments = re.sub(r'(P\d+)', r'[\1]', subtype_allsegments)
-
 
                         results_summary = {
                             "blast_subtype_by_G[P]seg": subtype,
@@ -754,12 +764,14 @@ task Report {
         ) -> Optional[Tuple]:
             if seg in df.index:
                 df_seg = df.loc[seg, :]
-                tmp = df_seg["Genotype"].value_counts()
+                if seg == 9:
+                    tmp = df_seg["G_genotype"].value_counts()
+                else:
+                    tmp = df_seg["P_genotype"].value_counts()
                 if len(tmp) == 0:
                     subtype = None
                 else:
-                    result = re.findall(reg_pat, tmp.index[0])
-                    subtype = "".join(result)
+                    subtype=tmp.index[0]
                 if df.empty:
                     virus_name = "-"
                 else:

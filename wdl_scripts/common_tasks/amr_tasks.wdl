@@ -665,9 +665,9 @@ task abritamr {
     }
 
     output {
-        File out = "./abritamr/abritamr.txt"
-        File matches = "./abritamr/summary_matches.txt"
-        File virulence = "./abritamr/summary_virulence.txt"
+        File? out = "./abritamr/abritamr.txt"
+        File? matches = "./abritamr/summary_matches.txt"
+        File? virulence = "./abritamr/summary_virulence.txt"
     }
 }
 

@@ -7,3 +7,5 @@ blast.wdl
 cromwell-executions/
 snpEff/
 wdl_scripts/snpeff_flu.wdl
+snpEff_5.2/
+archive/
