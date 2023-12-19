@@ -31,6 +31,7 @@ workflow processing {
         File kraken2_standard_8gb = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz"
         Int min_contig_length = 500
         Int lines_number = length(Files)
+        String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
 
@@ -118,6 +119,15 @@ workflow processing {
         threads = 1,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
     }
+
+    call kraken2.Bracken as bracken {
+        input:
+        sample_name = sample_name,
+        kraken_report = kraken2.report_txt,
+        kraken2_classifier = kraken2_standard_8gb,
+        level = kraken_level,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bracken:2.8--dcb3e47"
+    }    
 
     call tasks.RgiBwt as rig_bwt {
         input:
