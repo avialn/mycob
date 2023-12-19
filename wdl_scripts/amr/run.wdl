@@ -244,7 +244,6 @@ workflow processing {
         File? abritamr_vir = abritamr.virulence
         File blast_res = blast.blast_res
         File kraken_txt = kraken2.report_txt
-        File kraken_out = kraken2.output_tsv
         File bracken_txt = bracken.report_txt
     } 
 
