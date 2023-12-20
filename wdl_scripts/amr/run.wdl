@@ -112,8 +112,8 @@ workflow processing {
 
     call kraken2.Kraken2 as kraken2 {
         input:
-        fastq_1 = samtools_filter.host_filtered_fastq_1,
-        fastq_2 = samtools_filter.host_filtered_fastq_2,
+        fastq_1 = fastq_1,
+        fastq_2 = fastq_2,
         sample_name = sample_name,
         kraken2_classifier = kraken2_standard_8gb,
         threads = 1,
