@@ -653,8 +653,6 @@ workflow processing {
             input:
             sample_name = sample_name,
             irma_report = report_flu.report,
-            snpeff_HA_report = parse_snpeff_ha.snpeff_json,
-            snpeff_NA_report = parse_snpeff_na.snpeff_json,
             nextclade_HA_report = nextclade_parse_flu_ha.nextclade_json,
             nextclade_NA_report = nextclade_parse_flu_na.nextclade_json,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
