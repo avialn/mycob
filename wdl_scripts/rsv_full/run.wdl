@@ -7,6 +7,7 @@ import "kraken2.wdl" as kraken2
 import "irma.wdl" as irma
 import "nextclade.wdl" as nextclade
 import "yandex_utilities.wdl" as Utils
+import "summary_report.wdl" as summary_report
 #import "../common_tasks/preprocessing.wdl" as preprocessing
 #import "../common_tasks/kraken2.wdl" as kraken2
 #import "../common_tasks/irma.wdl" as irma
@@ -46,6 +47,10 @@ workflow processing {
         File reference_fasta_cov = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta"
         File reference_fasta_metapneumo = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta"
         File reference_fasta_flu = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta"
+        File HA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/HA_wis_67_2022.fasta"
+        File NA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/NA_wis_67_2022.fasta"
+        File snpeff_config = "snpEff_5.2/snpEff.config"
+        File snpeff_db = "snpEff_5.2/data.zip"        
         Int lines_number = length(Files)
     }
 
@@ -609,19 +614,47 @@ workflow processing {
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
 
-        call nextclade.Nextclade as nextclade_flu {
+        call nextclade.Nextclade as nextclade_flu_ha {
             input:
-            ha_fasta = irma_flu.ha_fasta,
-            na_fasta = irma_flu.na_fasta,
+            fasta = irma_flu.ha_fasta,
+            ref_name = "HA_wis_67_2022",
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/nextclade:2.11.0-flu"
         }
 
-        call nextclade.NextcladeParse as nextclade_parse_flu {
+        if (nextclade_flu_ha.proceed == "yes") {
+
+            call nextclade.NextcladeParse as nextclade_parse_flu_ha {
+                input:
+                nextclade_tsv = nextclade_flu_ha.nextclade_tsv,
+                search_antigenic_mut = "yes",
+                ref_name = "HA_wis_67_2022",
+                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+            }
+        }
+
+        call nextclade.Nextclade as nextclade_flu_na {
             input:
-            HA_tsv = nextclade_flu.HA_nextclade,
-            NA_tsv = nextclade_flu.NA_nextclade,
-            report = report_flu.report,
-            antigenic_frame = "/home/cromwell/mycob-ref/rsv_full/antigenic_frame.txt",
+            fasta = irma_flu.na_fasta,
+            ref_name = "NA_wis_67_2022",
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/nextclade:2.11.0-flu"
+        }
+
+        if (nextclade_flu_na.proceed == "yes") {
+            call nextclade.NextcladeParse as nextclade_parse_flu_na {
+                input:
+                nextclade_tsv = nextclade_flu_na.nextclade_tsv,
+                search_antigenic_mut = "no",
+                ref_name = "NA_wis_67_2022",
+                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+            }
+        }
+
+        call summary_report.SummaryReport as summary_report_flu {
+            input:
+            sample_name = sample_name,
+            irma_report = report_flu.report,
+            nextclade_HA_report = nextclade_parse_flu_ha.nextclade_json,
+            nextclade_NA_report = nextclade_parse_flu_na.nextclade_json,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
     }
@@ -659,6 +692,13 @@ workflow processing {
         File krona_kraken_html = krona_kraken.report_html
         File kraken_virus_txt = kraken2_vir.report_txt
         File bracken_virus_txt = bracken_vir.report_txt
+        File? HA_nextclade_tsv = nextclade_flu_ha.nextclade_tsv
+        File? NA_nextclade_tsv = nextclade_flu_na.nextclade_tsv
+        File? HA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        File? NA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        String? HA_nextclade_coverage_percentage = nextclade_flu_ha.coverage_percentage
+        String? NA_nextclade_coverage_percentage = nextclade_flu_na.coverage_percentage
+        File? summary_report_json = summary_report_flu.report_json
         File host_filter_summary = host_filter.summary_txt
     }
 }
