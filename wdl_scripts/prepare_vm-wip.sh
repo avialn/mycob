@@ -43,10 +43,11 @@ cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/preprocessing.wdl /home/
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/amr_tasks.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/dada2.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/yandex_utilities.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
+cp -f /home/cromwell/dev/mycob/wdl_scripts/common_tasks/summary_report.wdl /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_inputs.json /home/cromwell/ |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex_options.json /home/cromwell/options.json |& tee -a /home/cromwell/aws.log
 cp -f /home/cromwell/dev/mycob/wdl_scripts/yandex.conf /home/cromwell/ |& tee -a /home/cromwell/aws.log
-zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl /home/cromwell/dada2.wdl
+zip --junk-paths /home/cromwell/imports.zip /home/cromwell/irma.wdl /home/cromwell/kraken2.wdl /home/cromwell/nextclade.wdl /home/cromwell/preprocessing.wdl /home/cromwell/yandex_utilities.wdl /home/cromwell/amr_tasks.wdl /home/cromwell/dada2.wdl /home/cromwell/summary_report.wdl
 
 mkdir -p /home/cromwell/mycob-ref
 mkdir -p /home/cromwell/mycob-ref/blast
