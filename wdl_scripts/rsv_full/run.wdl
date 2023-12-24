@@ -46,6 +46,10 @@ workflow processing {
         File reference_fasta_cov = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta"
         File reference_fasta_metapneumo = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta"
         File reference_fasta_flu = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta"
+        File HA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/HA_wis_67_2022.fasta"
+        File NA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/NA_wis_67_2022.fasta"
+        File snpeff_config = "snpEff_5.2/snpEff.config"
+        File snpeff_db = "snpEff_5.2/data.zip"        
         Int lines_number = length(Files)
     }
 
