@@ -259,7 +259,7 @@ task pangolin_one_sample {
         CODE
     >>>
     runtime {
-        docker: docker
+        docker: "~{docker}"
     }
     output {
         String     date                   = read_string("DATE")
