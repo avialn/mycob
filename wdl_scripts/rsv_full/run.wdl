@@ -8,6 +8,7 @@ import "irma.wdl" as irma
 import "nextclade.wdl" as nextclade
 import "yandex_utilities.wdl" as Utils
 import "summary_report.wdl" as summary_report
+import "sarscov2.wdl" as sarscov2
 #import "../common_tasks/preprocessing.wdl" as preprocessing
 #import "../common_tasks/kraken2.wdl" as kraken2
 #import "../common_tasks/irma.wdl" as irma
@@ -573,6 +574,14 @@ workflow processing {
             irma_type = irma_qc_cov.irma_type,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
+
+        call sarscov2.pangolin_one_sample {
+            input:
+                genome_fasta = call_consensus.irma_fasta,
+                max_ambig = 0.90,
+                min_length = 2000,
+                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.23.1",
+                inference_usher=false
     }
 
     call irma.Irma as irma_flu {
@@ -700,5 +709,15 @@ workflow processing {
         String? NA_nextclade_coverage_percentage = nextclade_flu_na.coverage_percentage
         File? summary_report_json = summary_report_flu.report_json
         File host_filter_summary = host_filter.summary_txt
+        String? pango_lineage            = pangolin_one_sample.pango_lineage
+        String? pango_lineage_usher      = pangolin_one_sample_usher.pango_lineage
+        String? scorpio_call             = pangolin_one_sample.scorpio_call
+        String? pangolin_conflicts       = pangolin_one_sample.pangolin_conflicts
+        String? pangolin_notes           = pangolin_one_sample.pangolin_notes
+        File?   pango_lineage_report     = pangolin_one_sample.pango_lineage_report
+        String? pangolin_usher_version   = pangolin_one_sample.pangolin_usher_version
+        String? pangolin_docker          = pangolin_one_sample.pangolin_docker
+        String? pangolin_version         = pangolin_one_sample.pangolin_version
+        String? pangolearn_version       = pangolin_one_sample.pangolearn_version         
     }
 }
