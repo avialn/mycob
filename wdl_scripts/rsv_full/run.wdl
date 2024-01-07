@@ -563,7 +563,7 @@ workflow processing {
             module_irma = "CoV",
             irma_qc = irma_cov.irma_qc,
             reference_fasta = reference_fasta_cov,
-            irma_fasta = select_first(irma_cov.irma_fasta),
+            irma_fasta = irma_cov.irma_fasta,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
 
@@ -577,7 +577,7 @@ workflow processing {
 
         call sarscov2.pangolin_one_sample {
             input:
-                genome_fasta = irma_cov.irma_fasta,
+                genome_fasta = select_first(irma_cov.irma_fasta),
                 max_ambig = 0.90,
                 min_length = 2000,
                 docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.23.1",
