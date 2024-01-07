@@ -582,6 +582,7 @@ workflow processing {
                 min_length = 2000,
                 docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.23.1",
                 inference_usher=false
+        }
     }
 
     call irma.Irma as irma_flu {
