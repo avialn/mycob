@@ -711,7 +711,6 @@ workflow processing {
         File? summary_report_json = summary_report_flu.report_json
         File host_filter_summary = host_filter.summary_txt
         String? pango_lineage            = pangolin_one_sample.pango_lineage
-        String? pango_lineage_usher      = pangolin_one_sample_usher.pango_lineage
         String? scorpio_call             = pangolin_one_sample.scorpio_call
         String? pangolin_conflicts       = pangolin_one_sample.pangolin_conflicts
         String? pangolin_notes           = pangolin_one_sample.pangolin_notes
