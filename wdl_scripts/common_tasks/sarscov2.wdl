@@ -271,7 +271,6 @@ task pangolin_one_sample {
         String     pangolin_usher_version = read_string("VERSION_PANGO_USHER")
         String     pangolin_version       = read_string("VERSION_PANGOLIN")
         String     pangolearn_version     = read_string("VERSION_PANGOLEARN")
-        String     pangolin_docker        = docker
         File       pango_lineage_report   = "${basename}.pangolin_report.csv"
         File       msa_fasta              = "~{basename}.pangolin_msa.fasta"
     }

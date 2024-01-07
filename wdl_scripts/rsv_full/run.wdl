@@ -716,7 +716,6 @@ workflow processing {
         String? pangolin_notes           = pangolin_one_sample.pangolin_notes
         File?   pango_lineage_report     = pangolin_one_sample.pango_lineage_report
         String? pangolin_usher_version   = pangolin_one_sample.pangolin_usher_version
-        String? pangolin_docker          = pangolin_one_sample.pangolin_docker
         String? pangolin_version         = pangolin_one_sample.pangolin_version
         String? pangolearn_version       = pangolin_one_sample.pangolearn_version         
     }
