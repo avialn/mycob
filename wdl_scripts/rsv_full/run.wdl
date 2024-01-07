@@ -563,7 +563,7 @@ workflow processing {
             module_irma = "CoV",
             irma_qc = irma_cov.irma_qc,
             reference_fasta = reference_fasta_cov,
-            irma_fasta = irma_cov.irma_fasta,
+            irma_fasta = irma_cov.irma_fasta[0],
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
         }
 
