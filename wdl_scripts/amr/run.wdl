@@ -222,6 +222,10 @@ workflow processing {
         File? cutadapt_summary_tsv = cutadapt.cutadapt_summary_tsv
         File r1_trimmed_fastqc_html = trimmed_R1_FastQC.qc_report_html
         File r2_trimmed_fastqc_html = trimmed_R2_FastQC.qc_report_html
+        File fastp_trimm_R1 = trimm.R1_file
+        File fastp_trimm_R2 = trimm.R2_file
+        File trimmomatic_trimm_R1 = trimmomatic.trim_fastq_1
+        File trimmomatic_trimm_R2 = trimmomatic.trim_fastq_2
         File number_row_reads = bowtie2_filter.row_reads_count
         File number_host_filtered_reads = samtools_filter.host_filtered_reads_count
         File allele_mapping_data_txt = rig_bwt.kma_amr_results_txt
