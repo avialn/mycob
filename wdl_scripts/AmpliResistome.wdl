@@ -8,7 +8,7 @@ import "./common_tasks/preprocessing.wdl" as preprocessing
 import "./common_tasks/kraken2.wdl" as kraken2
 
 import "./common_tasks/amr_tasks.wdl" as tasks
-#import "../common_tasks/yandex_utilities.wdl" as Utils
+import "./common_tasks/yandex_utilities.wdl" as Utils
 
 workflow AmpliResistome {
 
@@ -27,6 +27,7 @@ workflow AmpliResistome {
         File kraken2_standard_8gb = "db/kraken2/k2_standard_08gb_20230605.tar.gz"
         Int min_contig_length = 500
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
+        minimap_ref = "/home/admin/antares2.fasta"
     }
 
 call preprocessing.FastQC as fastqc_row_R1 {
@@ -209,6 +210,15 @@ call preprocessing.FastQC as fastqc_row_R1 {
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
     }
 
+    call Utils.Minimap2 as minimap {
+        input:
+            fastq_1 = host_filter.host_filtered_fastq_1,
+            fastq_2 = host_filter.host_filtered_fastq_2,
+            ref = minimap_ref,
+            threads = threads,
+            docker = "staphb/minimap2:latest"
+    }
+
     output {
         # preprocessing: fastqc, trimmomatic, cutadapt, host-filtering
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
@@ -241,6 +251,10 @@ call preprocessing.FastQC as fastqc_row_R1 {
         File blast_res = blast.blast_res
         File kraken_txt = kraken2.report_txt
         File bracken_txt = bracken.report_txt
+
+        #minimap
+        String minimap_count = minimap.total_count # host_filtered x 2
+        String HA_minimap_matched_count = minimap.matched_count
     } 
 
 }

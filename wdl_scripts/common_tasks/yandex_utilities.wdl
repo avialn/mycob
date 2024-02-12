@@ -42,3 +42,54 @@ task trimm {
 		File fastp_html = "fastp.html"
     }
 }
+
+task Minimap2 {
+
+    input {
+        File? fastq_1
+        File? fastq_2
+        File ref
+        Int threads
+        String docker
+    }
+
+    command <<<
+        set -ex -o pipefail
+
+        minimap2 -t ~{threads} \
+        -ax sr -c \
+        --secondary=yes \
+        ~{ref} \
+        ~{fastq_1} ~{fastq_2} > file.sam
+
+        ref_name=$(basename "~{ref}" .fasta)
+
+        echo $ref_name > ref_name.txt
+
+        # STATS counting
+        grep -v '^@' file.sam | wc -l > total_count.txt
+        matched_count=$(grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1}')
+
+        if [ -z "$matched_count" ]; then
+            echo "No aligned reads" > proceed.txt
+            echo "0" > matched_count.txt
+        else
+            echo "yes" > proceed.txt
+            echo $matched_count > matched_count.txt
+        fi
+
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File file_sam = "file.sam"
+        String proceed = read_string("proceed.txt")
+        String ref_name = read_string("ref_name.txt")
+        String total_count = read_string("total_count.txt")
+        String matched_count = read_string("matched_count.txt")
+    }
+}
+
