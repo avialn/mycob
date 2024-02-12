@@ -7,7 +7,7 @@ version 1.0
 import "./common_tasks/preprocessing.wdl" as preprocessing
 import "./common_tasks/kraken2.wdl" as kraken2
 
-import "../common_tasks/amr_tasks.wdl" as tasks
+import "./common_tasks/amr_tasks.wdl" as tasks
 #import "../common_tasks/yandex_utilities.wdl" as Utils
 
 workflow AmpliResistome {
@@ -154,7 +154,7 @@ call preprocessing.FastQC as fastqc_row_R1 {
         input:
             contigs = spades.contigs_fa,
             min_contig_length = min_contig_length,
-            docker = seqtk:4.4"
+            docker = "seqtk:4.4"
     }
 
     call tasks.RgiMain as rgi_main {
@@ -177,7 +177,7 @@ call preprocessing.FastQC as fastqc_row_R1 {
             kma_output = rig_bwt.kma_amr_results_txt,
             gene_coverage_tsv = gene_coverage.output_tsv,
             sample_name = sample_name,
-            docker = python:4.4"
+            docker = "python:4.4"
     }
 
     call tasks.motus as motus {
