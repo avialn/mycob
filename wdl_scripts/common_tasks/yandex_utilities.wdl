@@ -62,10 +62,6 @@ task Minimap2 {
         ~{ref} \
         ~{fastq_1} ~{fastq_2} > file.sam
 
-        ref_name=$(basename "~{ref}" .fasta)
-
-        echo $ref_name > ref_name.txt
-
         # STATS counting
         grep -v '^@' file.sam | wc -l > total_count.txt
         matched_count=$(grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1}')
@@ -87,9 +83,42 @@ task Minimap2 {
     output {
         File file_sam = "file.sam"
         String proceed = read_string("proceed.txt")
-        String ref_name = read_string("ref_name.txt")
         String total_count = read_string("total_count.txt")
         String matched_count = read_string("matched_count.txt")
     }
 }
+
+task Samtools {
+
+    input {
+        File ref
+        File sam
+        Int min_cov=5
+        String docker
+
+    }
+
+    command <<<
+        set -ex -o pipefail
+
+        samtools view -bo file.bam ~{sam}
+        samtools sort -o sorted.bam file.bam
+        samtools index sorted.bam
+
+        # STATS length
+        samtools depth sorted.bam > coverage.txt # <reference name> <position> <coverage depth>
+        coverage=$(cat coverage.txt| wc -l) # how many positions are covered by reads
+
+   >>>
+
+    runtime {
+        docker: "~{docker}"
+    }
+
+    output {
+        File coverage = "coverage.txt"
+    }
+
+}
+
 
