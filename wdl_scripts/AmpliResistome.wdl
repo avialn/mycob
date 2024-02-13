@@ -27,7 +27,7 @@ workflow AmpliResistome {
         File kraken2_standard_8gb = "db/kraken2/k2_standard_08gb_20230605.tar.gz"
         Int min_contig_length = 500
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
-        minimap_ref = "/home/admin/antares2.fasta"
+        File minimap_ref = "/home/admin/antares2.fasta"
     }
 
 call preprocessing.FastQC as fastqc_row_R1 {
