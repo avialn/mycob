@@ -91,7 +91,7 @@ task Minimap2Parse {
             """creates dict.json from dataframe of matched reads"""
             dict_json = {}
             if df.empty:
-                dict_json["matched_count"] = 0
+                dict_json["matched_reads_count"] = 0
             else:
                 dict_json = dict(zip (df["fasta_name"], df["reads_count"]))
             return dict_json
