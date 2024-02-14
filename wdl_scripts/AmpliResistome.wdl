@@ -219,15 +219,6 @@ call preprocessing.FastQC as fastqc_row_R1 {
             docker = "staphb/minimap2:latest"
     }
 
-    if (minimap.proceed == "yes") {
-        call Utils.Samtools as samtools {
-            input:
-                ref = minimap_ref,
-                sam = minimap.file_sam,
-                docker = "samtools_bcftoolss:1.19"
-        }
-    }
-
     output {
         # preprocessing: fastqc, trimmomatic, cutadapt, host-filtering
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
@@ -262,10 +253,8 @@ call preprocessing.FastQC as fastqc_row_R1 {
         File bracken_txt = bracken.report_txt
 
         #minimap
-        String minimap_count = minimap.total_count # host_filtered x 2
-        String HA_minimap_matched_count = minimap.matched_count
-        File? coverage_txt = samtools.coverage
-    } 
-
+        String minimap_total_reads_txt = minimap.total_count_txt # host_filtered x 2
+        String minimap_matched_reads_txt = minimap.matched_count_txt
+    }
 }
 

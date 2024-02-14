@@ -44,7 +44,6 @@ task trimm {
 }
 
 task Minimap2 {
-
     input {
         File? fastq_1
         File? fastq_2
@@ -54,8 +53,7 @@ task Minimap2 {
     }
 
     command <<<
-        set -ex -o pipefail
-
+        set -e
         minimap2 -t ~{threads} \
         -ax sr -c \
         --secondary=yes \
@@ -64,61 +62,15 @@ task Minimap2 {
 
         # STATS counting
         grep -v '^@' file.sam | wc -l > total_count.txt
-        matched_count=$(grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1}')
-
-        if [ -z "$matched_count" ]; then
-            echo "No aligned reads" > proceed.txt
-            echo "0" > matched_count.txt
-        else
-            echo "yes" > proceed.txt
-            echo $matched_count > matched_count.txt
-        fi
-
+        grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1, $2}' > matched_count.txt
     >>>
-
     runtime {
         docker: "~{docker}"
     }
-
     output {
         File file_sam = "file.sam"
-        String proceed = read_string("proceed.txt")
-        String total_count = read_string("total_count.txt")
-        String matched_count = read_string("matched_count.txt")
+        String total_count_txt = read_string("total_count.txt")
+        String matched_count_txt = read_string("matched_count.txt")
     }
 }
-
-task Samtools {
-
-    input {
-        File ref
-        File sam
-        Int min_cov=5
-        String docker
-
-    }
-
-    command <<<
-        set -ex -o pipefail
-
-        samtools view -bo file.bam ~{sam}
-        samtools sort -o sorted.bam file.bam
-        samtools index sorted.bam
-
-        # STATS length
-        samtools depth sorted.bam > coverage.txt # <reference name> <position> <coverage depth>
-        coverage=$(cat coverage.txt| wc -l) # how many positions are covered by reads
-
-   >>>
-
-    runtime {
-        docker: "~{docker}"
-    }
-
-    output {
-        File coverage = "coverage.txt"
-    }
-
-}
-
 
