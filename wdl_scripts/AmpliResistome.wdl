@@ -30,7 +30,7 @@ workflow AmpliResistome {
         File minimap_ref = "/home/admin/antares2.fasta"
     }
 
-call preprocessing.FastQC as fastqc_row_R1 {
+    call preprocessing.FastQC as fastqc_row_R1 {
         input:
             fastq = fastq_1,
             docker = "fastqc:4.4"
@@ -219,6 +219,12 @@ call preprocessing.FastQC as fastqc_row_R1 {
             docker = "staphb/minimap2:latest"
     }
 
+    call Utils.Minimap2Parse as minimap_parse {
+        input:
+            matched_count = minimap.matched_count_txt
+            docker = "python:4.4"
+    }
+
     output {
         # preprocessing: fastqc, trimmomatic, cutadapt, host-filtering
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
@@ -253,8 +259,10 @@ call preprocessing.FastQC as fastqc_row_R1 {
         File bracken_txt = bracken.report_txt
 
         #minimap
-        String minimap_total_reads_txt = minimap.total_count_txt # host_filtered x 2
-        String minimap_matched_reads_txt = minimap.matched_count_txt
+        File minimap_total_reads_txt = minimap.total_count_txt # host_filtered x 2
+        File minimap_matched_reads_txt = minimap.matched_count_txt
+        File minimap_matched_reads_json = minimap_parse.matched_count_json
+
     }
 }
 
