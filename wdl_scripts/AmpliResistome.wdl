@@ -264,7 +264,7 @@ call preprocessing.FastQC as fastqc_row_R1 {
         #minimap
         String minimap_count = minimap.total_count # host_filtered x 2
         String HA_minimap_matched_count = minimap.matched_count
-        File coverage_txt = samtools.coverage
+        File? coverage_txt = samtools.coverage
     } 
 
 }
