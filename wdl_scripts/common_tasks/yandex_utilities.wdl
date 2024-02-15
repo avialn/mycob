@@ -63,58 +63,39 @@ task Minimap2 {
         # STATS counting
         grep -v '^@' file.sam | wc -l > total_count.txt
         grep -v '^@' file.sam | cut -f 3 | sort | uniq -c | awk '$2 != "*" {print $1, $2}' > matched_count.txt
+        #sed "s/:/#/g" matched_count.txt > modified_matched_count.txt # for transfer only, ":" in fasta's headers interpreted as a path 
     >>>
     runtime {
         docker: "~{docker}"
     }
     output {
         File file_sam = "file.sam"
-        String total_count_txt = read_string("total_count.txt")
-        String matched_count_txt = read_string("matched_count.txt")
+        File total_count_txt = "total_count.txt"
+        File matched_count_txt = "matched_count.txt"
     }
 }
 
 task Minimap2Parse {
     input {
-        File matched_count
         String docker
+        File matched_count
     }
 
     command <<<
         set -e
         python3 <<CODE
 
-        import pandas ad pd
+        import pandas as pd
         import json
 
-        def create_json (df):
-            """creates dict.json from dataframe of matched reads"""
-            dict_json = {}
-            if df.empty:
-                dict_json["matched_reads_count"] = 0
-            else:
-                dict_json = dict(zip (df["fasta_name"], df["reads_count"]))
-            return dict_json
 
-        def write_json(data_json, file_json):
-            """writes file.json from data.json"""
-            with open(file_json, "w") as file:
-                json.dump(data_json, file, indent =4)
-
-        matched_count_df = pd.read_csv(
-            "~{matched_count}", header=None, sep = " ", names=["reads_count", "fasta_name"]
-        )
-
-        matched_count_json = create_json(matched_count_df)
-
-        write_json(matched_count_json, "output.json")
         CODE
     >>>
     runtime {
         docker: "~{docker}"
     }
     output {
-        File matched_count_json = "output.json"
+        File? matched_count_json = "output.json"
     }
 }
 
