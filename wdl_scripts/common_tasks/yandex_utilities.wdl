@@ -70,7 +70,7 @@ task Minimap2 {
     }
     output {
         File file_sam = "file.sam"
-        File total_count_txt = "total_count.txt"
+        String total_count = read_string("total_count.txt")
         File matched_count_txt = "matched_count.txt"
     }
 }
@@ -87,15 +87,33 @@ task Minimap2Parse {
 
         import pandas as pd
         import json
+        
+        def create_json (df):
+            """creates dict.json from dataframe of matched reads"""
+            dict_json = {}
+            if df.empty:
+                dict_json["matched_reads_count"] = 0
+            else:
+                dict_json = dict(zip (df["fasta_name"], df["reads_count"]))
+            return dict_json
 
-
+        def write_json(data_json, file_json):
+            """writes file.json from data.json"""
+            with open(file_json, "w") as file:
+                json.dump(data_json, file, indent =4) 
+          
+        matched_count_df = pd.read_csv(
+            "~{matched_count}", header=None, sep = " ", names=["reads_count", "fasta_name"]
+        )
+        matched_count_json = create_json(matched_count_df)
+        write_json(matched_count_json, "matched_count.json")
         CODE
     >>>
     runtime {
         docker: "~{docker}"
     }
     output {
-        File? matched_count_json = "output.json"
+        File matched_count_json = "matched_count.json"
     }
 }
 

@@ -259,9 +259,8 @@ workflow AmpliResistome {
         File bracken_txt = bracken.report_txt
 
         #minimap
-        #File minimap_total_reads_txt = minimap.total_count_txt # host_filtered x 2
-        #File minimap_matched_reads_txt = minimap.matched_count_txt
-        #File minimap_matched_reads_json = minimap_parse.matched_count_json
+        String minimap_total_reads = minimap.total_count # host_filtered x 2
+        File minimap_matched_reads_json = minimap_parse.matched_count_json
 
     }
 }
