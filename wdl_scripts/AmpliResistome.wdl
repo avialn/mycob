@@ -221,7 +221,8 @@ workflow AmpliResistome {
 
     call Utils.Minimap2Parse as minimap_parse {
         input:
-            matched_count = minimap.matched_count_txt,
+            matched_reads_count = minimap.matched_count_txt,
+            total_reads_count = minimap.total_count,
             docker = "python:4.4"
     }
 
@@ -249,7 +250,7 @@ workflow AmpliResistome {
         File bigtable_report_tsv = report.bigtable_tsv
         File primary_AMR_report_tsv = report.synthesized_report_tsv
 
-        # abricate, abritamr
+        # abricate, abritamr, blast, kraken
         File motus_output = motus.out
         File abricate_tsv = abricate.out
         File? abritamr_tsv = abritamr.out
@@ -261,7 +262,6 @@ workflow AmpliResistome {
         #minimap
         String minimap_total_reads = minimap.total_count # host_filtered x 2
         File minimap_matched_reads_json = minimap_parse.matched_count_json
-
     }
 }
 
