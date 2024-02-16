@@ -195,6 +195,12 @@ task RgiBwt {
         -2 ~{fastq_2} \
         -a kma \
         -o amr_report --clean
+
+        awk -F '\t' 'BEGIN {OFS="\t"} {print $1, $9, $12, $14, $23, $24, $25, $26}' \
+        amr_report.gene_mapping_data.txt > short_amr_report.txt
+
+        (head -n 1 short_amr_report.txt && tail -n +2 short_amr_report.txt | \
+        sort -k3,3nr -t$'\t') | column -t -s $'\t' > sorted_short_amr_report.txt
     >>>
 
     output {
@@ -206,6 +212,7 @@ task RgiBwt {
         File output_sorted_length_100 = "amr_report.sorted.length_100.bam"
         File output_sorted_length_100_bai = "amr_report.sorted.length_100.bam.bai"
         File kma_amr_results_json = "amr_report.allele_mapping_data.json"
+        File sorted_short_amr_report_txt = "sorted_short_amr_report.txt"
     }
 
     runtime {
