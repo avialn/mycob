@@ -78,7 +78,8 @@ task Minimap2 {
 task Minimap2Parse {
     input {
         String docker
-        File matched_count
+        File matched_reads_count
+        String total_reads_count
     }
 
     command <<<
@@ -88,7 +89,7 @@ task Minimap2Parse {
         import pandas as pd
         import json
         
-        def create_json (df):
+        def create_matched_count_json(df):
             """creates dict.json from dataframe of matched reads"""
             dict_json = {}
             if df.empty:
@@ -97,23 +98,32 @@ task Minimap2Parse {
                 dict_json = dict(zip (df["fasta_name"], df["reads_count"]))
             return dict_json
 
-        def write_json(data_json, file_json):
+        def create_merged_json(count, dict_json):
+            """merges total_count.json and matched_count.json to merged.json"""
+            return {
+                "total_reads": int(count),
+                "matched_reads" : dict_json
+            }
+
+        def write_json(dict_json, file_json):
             """writes file.json from data.json"""
             with open(file_json, "w") as file:
-                json.dump(data_json, file, indent =4) 
+                json.dump(dict_json, file, indent =4)
           
         matched_count_df = pd.read_csv(
-            "~{matched_count}", header=None, sep = " ", names=["reads_count", "fasta_name"]
+            "~{matched_reads_count}", header=None, sep = " ", names=["reads_count", "fasta_name"]
         )
-        matched_count_json = create_json(matched_count_df)
-        write_json(matched_count_json, "matched_count.json")
+        sorted_matched_count_df = matched_count_df.sort_values(by="reads_count", ascending=False)
+        matched_count_json = create_matched_count_json(sorted_matched_count_df)
+        merged_json = create_merged_json(~{total_reads_count}, matched_count_json)
+        write_json(merged_json, "matched_reads_count.json")
         CODE
     >>>
     runtime {
         docker: "~{docker}"
     }
     output {
-        File matched_count_json = "matched_count.json"
+        File matched_count_json = "matched_reads_count.json"
     }
 }
 

@@ -143,7 +143,8 @@ workflow AmpliResistome {
 
     call Utils.Minimap2Parse as minimap_parse {
         input:
-            matched_count = minimap.matched_count_txt,
+            matched_reads_count = minimap.matched_count_txt,
+            total_reads_count = minimap.total_count,
             docker = "python:4.4"
     }
 
