@@ -195,6 +195,8 @@ task RgiBwt {
         -2 ~{fastq_2} \
         -a kma \
         -o amr_report --clean
+
+        awk -F '\t' 'BEGIN {OFS="\t"} {print $1, $9, $12, $14, $23, $24, $25, $26}' amr_report.gene_mapping_data.txt | column -t -s $'\t'  > new_file.txt
     >>>
 
     output {
