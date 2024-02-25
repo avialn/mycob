@@ -9,27 +9,6 @@ task pangolin_one_sample {
         Int?    min_length
         Float?  max_ambig
         Boolean inference_usher
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.3-pangolearn-2021-06-15"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.11-pangolearn-2021-08-09"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.14-pangolearn-2021-09-28"
-        #String  docker = "staphb/pangolin:latest"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.14-pangolearn-2021-10-13"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.16-pangolearn-2021-11-18"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.16-pangolearn-2021-11-25"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.17-pangolearn-2022-01-05"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:3.1.20-pangolearn-2022-02-02"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.0.4-pangolearn-2022-03-22"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.0.5-pangolearn-2022-04-09"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.0.6-pangolearn-2022-05-23"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.1.2-pangolearn-2022-07-09"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.1.3-data-1.15.1"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.1.3-data-1.16"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.1.3-data-1.17"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.2-data-1.18.1.1"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.2-data-1.19"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.3-data-1.20"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.3-data-1.21"
-        #String  docker = "cr.yandex/crp0pd4faec3e1qvam30/pangolin:4.3-data-1.22"
         String  docker
     }
     String basename = basename(genome_fasta, ".fasta")
