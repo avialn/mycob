@@ -271,6 +271,7 @@ workflow processing {
         File? fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
         File? fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
         File? preprocessing_qc_json = preprocessing_qc.report_json
+        File host_filter_summary = host_filter.summary_txt
         File? kraken_txt = kraken2.report_txt
         File? bracken_txt = bracken.report_txt
         File? krona_kraken_html = krona_kraken.report_html
