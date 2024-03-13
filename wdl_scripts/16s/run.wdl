@@ -56,7 +56,7 @@ workflow processing {
         File kraken2_pluspf_8gb = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_pluspf_08gb_20231009.tar.gz"
         File kraken2_16s = "/home/cromwell/mycob-ref/rsv_full/kraken2/16S_Greengenes13.5_20200326.tar.gz"
 
-        Boolean microb_16s = false
+        Boolean microb_16s = true
         #microb_16s dada2 classifiers
         File silva_138 = "/home/cromwell/mycob-ref/16S/dada2/silva_nr99_v138.1_wSpecies_train_set.fa.gz" #default
         File sbdi_gtdb = "/home/cromwell/mycob-ref/16S/dada2/36980767"
