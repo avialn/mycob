@@ -8,8 +8,8 @@ task concat {
 
     command <<<
         set -e
-        echo ~{sep=" ", tFiles[0]} > R1.txt
-        echo ~{sep=" ", tFiles[1]} > R2.txt
+        echo ~{sep=" " tFiles[0]} > R1.txt
+        echo ~{sep=" " tFiles[1]} > R2.txt
     >>>
 	runtime {
 		docker: "~{docker}"
