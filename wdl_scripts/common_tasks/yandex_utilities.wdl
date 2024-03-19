@@ -14,7 +14,6 @@ task concat {
     >>>
 	runtime {
 		docker: "~{docker}"
-		maxRetries: max_retries
 	}
 	output {
 		File R1_file = "R1.txt"
