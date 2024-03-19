@@ -1,5 +1,28 @@
 version 1.0
 
+
+task concat {
+    input {
+        Array[Array[String]] tFiles
+    }
+
+    command <<<
+        set -e
+        echo ~{sep=" ", tFiles[0]} > R1.txt
+        echo ~{sep=" ", tFiles[1]} > R2.txt
+    >>>
+	runtime {
+		docker: "~{docker}"
+		maxRetries: max_retries
+	}
+	output {
+		File R1_file = "R1.txt"
+		File R2_file = "R2.txt"
+    }
+}    
+
+
+
 task trimm {
     input {
         String sample_id

@@ -35,6 +35,13 @@ workflow processing {
     }
 
 
+    call Utils.concat as concat {
+        input:
+            tFiles = tranpose(Files),
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    }
+    
+    
     call Utils.trimm as trimm {
         input:
             fastq_1 = Files[0][0],
