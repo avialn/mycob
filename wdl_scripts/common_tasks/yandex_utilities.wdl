@@ -9,15 +9,15 @@ task concat {
 
     command <<<
         set -e
-        echo ~{sep=" " tFiles[0]} > R1.txt
-        echo ~{sep=" " tFiles[1]} > R2.txt
+        cat ~{sep=" " tFiles[0]} > R1.fastq.gz
+        cat ~{sep=" " tFiles[1]} > R2.fastq.gz
     >>>
 	runtime {
 		docker: "~{docker}"
 	}
 	output {
-		File R1_file = "R1.txt"
-		File R2_file = "R2.txt"
+		File concat_R1_file = "R1.fastq.gz"
+		File concat_R2_file = "R2.fastq.gz"
     }
 }    
 
