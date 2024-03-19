@@ -3,7 +3,7 @@ version 1.0
 
 task concat {
     input {
-        Array[Array[Files]] tFiles
+        Array[Array[File]] tFiles
         String docker
     }
 
