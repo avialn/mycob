@@ -37,7 +37,7 @@ workflow processing {
 
     call Utils.concat as concat {
         input:
-            tFiles = tranpose(Files),
+            tFiles = transpose(Files),
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
     
