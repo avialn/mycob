@@ -4,6 +4,7 @@ version 1.0
 task concat {
     input {
         Array[Array[String]] tFiles
+        String docker
     }
 
     command <<<
