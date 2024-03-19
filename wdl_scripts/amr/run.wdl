@@ -44,8 +44,8 @@ workflow processing {
     
     call Utils.trimm as trimm {
         input:
-            fastq_1 = Files[0][0],
-            fastq_2 = Files[0][1],
+            fastq_1 = concat.R1_file,
+            fastq_2 = concat.R2_file,
             lines_number = lines_number,
             sample_id = SampleID,
             minlen = 36,

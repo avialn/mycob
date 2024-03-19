@@ -16,8 +16,8 @@ task concat {
 		docker: "~{docker}"
 	}
 	output {
-		File concat_R1_file = "R1.fastq.gz"
-		File concat_R2_file = "R2.fastq.gz"
+		File R1_file = "R1.fastq.gz"
+		File R2_file = "R2.fastq.gz"
     }
 }    
 
