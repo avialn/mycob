@@ -7,9 +7,11 @@ export ATTEMPT=1
 #export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0306121-242611-16S_S289_L001_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0306121-242611-16S_S289_L001_R2_001.fastq.gz\"]]"
 #export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/pGXLvr3_21783_S21_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/21783_S21_R2_001.fastq.gz\"]]"
 export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0082765911_S314_L001_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0082765911_S314_L001_R2_001.fastq.gz\"]]"
+
+export FILES="[[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0082765911_S314_L001_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0082765911_S314_L001_R2_001.fastq.gz\"],[\"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0082765911_S314_L001_R1_001.fastq.gz\", \"s3://mycob-userdata/bdbf049c-df1d-43a2-9729-503390865dbb/0082765911_S314_L001_R2_001.fastq.gz\"]]"
 #export PANEL="hg38_reparation8"
 #export PANEL="hg38_genome"
-export PANEL="rsv_full"
+export PANEL="amr"
 #export PANEL="amr"
 export BUILD="hg38"
 export TYPE_HS="Amplicons"

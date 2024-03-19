@@ -1,5 +1,28 @@
 version 1.0
 
+
+task concat {
+    input {
+        Array[Array[File]] tFiles
+        String docker
+    }
+
+    command <<<
+        set -e
+        cat ~{sep=" " tFiles[0]} > R1.fastq.gz
+        cat ~{sep=" " tFiles[1]} > R2.fastq.gz
+    >>>
+	runtime {
+		docker: "~{docker}"
+	}
+	output {
+		File R1_file = "R1.fastq.gz"
+		File R2_file = "R2.fastq.gz"
+    }
+}    
+
+
+
 task trimm {
     input {
         String sample_id
