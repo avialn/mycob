@@ -238,6 +238,7 @@ task IrmaQC {
 
     runtime {
         docker: "~{docker}"
+        continueOnReturnCode: [0, 2]
     }
 
     output {
@@ -282,6 +283,7 @@ task Blast {
 
     runtime {
         docker: "~{docker}"
+        continueOnReturnCode: [0, 2]
     }
 
     output {
