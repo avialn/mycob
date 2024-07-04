@@ -9,3 +9,10 @@ snpEff/
 wdl_scripts/snpeff_flu.wdl
 snpEff_5.2/
 archive/
+M17_cov.zip
+M17_cov/
+fasta_cov.tar.gz
+fasta_cov/
+wdl_scripts/VirGenotyping_cov.wdl
+wdl_scripts/VirGenotyping_flu.wdl
+snpeff-5.2/
