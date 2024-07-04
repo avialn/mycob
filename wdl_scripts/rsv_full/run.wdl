@@ -580,7 +580,7 @@ workflow processing {
                 genome_fasta = select_first(irma_cov.irma_fasta),
                 max_ambig = 0.90,
                 min_length = 2000,
-                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.28.1",
+                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.25.1",
                 inference_usher=false
         }
     }
