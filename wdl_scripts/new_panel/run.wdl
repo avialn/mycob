@@ -1,24 +1,40 @@
 version 1.0
 
-#java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run VirGenotyping.wdl -i inputs.json -o options.json
+#java -Dconfig.file=backend.conf -jar tools/cromwell-65.jar run wdl_scripts/AmplyTax.wdl -i inputs.json -o options.json
 
+#kraken2_db:
+#kraken2_ncbi (archaeal,bacterial and fungal 16S/18S and ITS): https://ont-exd-int-s3-euwst1-epi2me-labs.s3.amazonaws.com/wf-metagenomics/ncbi_16s_18s_28s_ITS/ncbi_16s_18s_28s_ITS_kraken2.tar.gz
+#kraken2_standard_8gb (archaea,bacteria,viral,plasmid,human,UniVec_Core): https://benlangmead.github.io/aws-indexes/k2
+#kraken2_pluspf_8gb (standard plus protozoa & fungi): https://benlangmead.github.io/aws-indexes/k2
+#kraken2_16s: https://benlangmead.github.io/aws-indexes/k2
+
+#dada2_db:
+#microb_16s:
+#silva_138 (bacteria and archaea, prokaryotic 16/18s): https://zenodo.org/record/4587955/files/silva_nr99_v138.1_wSpecies_train_set.fa.gz
+#sbdi-gtdb (16s by conserved single-copy proteins): https://scilifelab.figshare.com/ndownloader/files/36980767
+#rdp (bacteria and archaeal 16S rRNA, fungal 28s, genus_level): https://zenodo.org/record/4310151/files/rdp_train_set_18.fa.gz
+#fungi_its:
+#unite_fungi (all eukaryotes): https://unite.ut.ee/repository.php
+#unite_all (fungi): https://unite.ut.ee/repository.php
+#fungi_18s:
+#silva_132 (eukaryotic 18S, v132 & v128): https://zenodo.org/record/1447330
+#pr2 (18S protists, metazoa, fungi and plants): https://github.com/pr2database/pr2database/releases/tag/v5.0.0
+
+# import "../common_tasks/preprocessing.wdl" as preprocessing
+# import "../common_tasks/kraken2.wdl" as kraken2
+# import "../common_tasks/dada2.wdl" as dada2
+# import "../common_tasks/yandex_utilities.wdl" as Utils
 import "preprocessing.wdl" as preprocessing
 import "kraken2.wdl" as kraken2
-import "irma.wdl" as irma
-import "nextclade.wdl" as nextclade
+import "dada2.wdl" as dada2
 import "yandex_utilities.wdl" as Utils
-import "summary_report.wdl" as summary_report
-import "sarscov2.wdl" as sarscov2
-#import "../common_tasks/preprocessing.wdl" as preprocessing
-#import "../common_tasks/kraken2.wdl" as kraken2
-#import "../common_tasks/irma.wdl" as irma
-#import "../common_tasks/nextclade.wdl" as nextclade
-#import "../common_tasks/yandex_utilities.wdl" as Utils
+
 
 workflow processing {
 
     input {
         Array[Array[String]] Files
+        Int lines_number = length(Files)
 	    Int max_retries = 1
 	    Int compression_level = 5
         String TaskID
@@ -30,37 +46,53 @@ workflow processing {
         Boolean cut_primers = false
         File? primer_left = "/home/cromwell/mycob-ref/rsv_full/left_primers.fasta"
         File? primer_right = "/home/cromwell/mycob-ref/rsv_full/right_primers.fasta"
-        Boolean transcriptome_filtering = true # false will take index_genome, true - index_transcriptome
+        Boolean transcriptome_filtering = false # false -> index_genome, true -> index_transcriptome
         File index_genome = "/home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/GRCh38_ERCC.bowtie2.tar"
         File index_transcriptome = "/home/cromwell/mycob-ref/rsv_full/human_bowtie2_index/GRCh38_transcriptome.bowtie2.tar"
+
+        #kraken/bracken classifiers
+        File kraken2_ncbi = "/home/cromwell/mycob-ref/rsv_full/kraken2/ncbi_16s_18s_28s_ITS_kraken2.tar.gz" # default
         File kraken2_standard_8gb = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_standard_08gb_20231009.tar.gz"
-        File kraken2_virus = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_viral_20231009.tar.gz"
-        String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
+        File kraken2_pluspf_8gb = "/home/cromwell/mycob-ref/rsv_full/kraken2/k2_pluspf_08gb_20231009.tar.gz"
+        File kraken2_16s = "/home/cromwell/mycob-ref/rsv_full/kraken2/16S_Greengenes13.5_20200326.tar.gz"
+
+        Boolean microb_16s = false
+        #microb_16s dada2 classifiers
+        File silva_138 = "/home/cromwell/mycob-ref/16S/dada2/silva_nr99_v138.1_wSpecies_train_set.fa.gz" #default
+        File sbdi_gtdb = "/home/cromwell/mycob-ref/16S/dada2/36980767"
+        File rdp = "/home/cromwell/mycob-ref/16S/dada2/rdp_train_set_18.fa.gz"
+
+        Boolean fungi_its = false
+        #fungi_ITS dada2 classifiers
+        File unite_fungi = "/home/cromwell/mycob-ref/16S/dada2/sh_general_release_dynamic_18.07.2023.fasta"   #default
+        File unite_all = "/home/cromwell/mycob-ref/16S/dada2/sh_general_release_dynamic_all_18.07.2023.fasta"
+
+        Boolean fungi_18s = false
+        #fungi_18s dada2 classifiers
+        File silva_132 = "/home/cromwell/mycob-ref/16S/dada2/silva_132.18s.99_rep_set.dada2.fa.gz" #default
+        File pr2= "/home/cromwell/mycob-ref/16S/dada2/pr2_version_5.0.0_SSU_dada2.fasta.gz"
+
         Int threads = 8
-        File reference_fasta_measles = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/MEASLES/reference/consensus.fasta"
-        File reference_fasta_adeno = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/ADENO/reference/consensus.fasta"
-        File reference_fasta_pneumo = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/PNEUMO/reference/consensus.fasta"
-        File reference_fasta_boca = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/BOCA/reference/consensus.fasta"
-        File reference_fasta_corona = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CORONA/reference/consensus.fasta"
-        File reference_fasta_respiro = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/RESPIRO/reference/consensus.fasta"
-        File reference_fasta_rhino = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/RHINO/reference/consensus.fasta"
-        File reference_fasta_rubula = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/RUBULA/reference/consensus.fasta"
-        File reference_fasta_cov = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/CoV/reference/consensus.fasta"
-        File reference_fasta_metapneumo = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/METAPMEUMO/reference/consensus.fasta"
-        File reference_fasta_flu = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/consensus.fasta"
-        File HA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/HA_wis_67_2022.fasta"
-        File NA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/NA_wis_67_2022.fasta"
-        File snpeff_config = "snpEff_5.2/snpEff.config"
-        File snpeff_db = "snpEff_5.2/data.zip"        
-        Int lines_number = length(Files)
+        Int trim_f = 21
+        Int trim_r = 26
+        Int trunc_q = 2
+        Int trunc_f = 250 #V3V4 is 460 nts with primers, so trunc_f+trunc_r > amplicon's length + 12
+        Int trunc_r = 210 #250 and 210 should be shorter than R1 and R1 lengths
+        Int minOverlap = 12 #если сумма ридов не покрывают длину ампликона, можно увеличить trunc_f+trunc_r или уменьшить minOverlap
+        String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
 
+    call Utils.concat as concat {
+        input:
+            tFiles = transpose(Files),
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    }
 
     call Utils.trimm as trimm {
         input:
-            fastq_1 = Files[0][0],
-            fastq_2 = Files[0][1],
+            fastq_1 = concat.R1_file,
+            fastq_2 = concat.R2_file,
             lines_number = lines_number,
             sample_id = SampleID,
             minlen = 36,
@@ -72,31 +104,39 @@ workflow processing {
     String fastq_1 = trimm.R1_file
     String fastq_2 = trimm.R2_file
 
-    call preprocessing.FastQC as fastqc_row_R1 {
+
+    call preprocessing.CheckInput as check_input {
+        input:
+        fastq = fastq_1,
+        min_reads = 500,
+        docker = "resouer/ubuntu-bc:latest"
+    }
+
+    if (check_input.proceed == "yes") {
+
+      call preprocessing.FastQC as fastqc_row_R1 {
         input:
         fastq = Files[0][0],
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    }
+      }
 
-    call preprocessing.FastQC as fastqc_row_R2 {
+      call preprocessing.FastQC as fastqc_row_R2 {
         input:
         fastq = Files[0][1],
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    }
+      }
 
-
-    call preprocessing.Trimmomatic as trimmomatic {
+      call preprocessing.Trimmomatic as trimmomatic {
         input:
         fastq_1 = fastq_1,
         fastq_2 = fastq_2,
         sample_name = sample_name,
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
-    }
+      }
 
-
-    if (cut_primers) {
-        call preprocessing.Cutadapt as cutadapt {
+      if (cut_primers) {
+        call preprocessing.Cutadapt as cutadapt_kraken {
             input:
             fastq_1 = trimmomatic.trim_fastq_1,
             fastq_2 = trimmomatic.trim_fastq_2,
@@ -105,618 +145,148 @@ workflow processing {
             primer_right = primer_right,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/cutadapt:4.4"
         }
-    }
+      }
 
-    call preprocessing.HostFilter as host_filter {
+      call preprocessing.HostFilter as host_filter {
         input:
-        fastq_1 = if cut_primers then cutadapt.cut_fastq_1 else trimmomatic.trim_fastq_1,
-        fastq_2 = if cut_primers then cutadapt.cut_fastq_2 else trimmomatic.trim_fastq_2,
+        fastq_1 = if cut_primers then cutadapt_kraken.cut_fastq_1 else trimmomatic.trim_fastq_1,
+        fastq_2 = if cut_primers then cutadapt_kraken.cut_fastq_2 else trimmomatic.trim_fastq_2,
         sample_name = sample_name,
         index_tar = if transcriptome_filtering then index_transcriptome else index_genome,
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bowtie2:2.5.1"
-    }
+      }
 
-    call preprocessing.PreprocessingQC as preprocessing_qc {
+      call preprocessing.PreprocessingQC as preprocessing_qc {
         input:
         sample_name = sample_name,
         trim_input_reads = trimmomatic.input_reads_trim,
         trim_both_surviving = trimmomatic.both_surviving_trim,
-        cut_input_reads = if defined(cutadapt.input_reads_cut) then cutadapt.input_reads_cut else "cut_primers is false",
-        cut_both_surviving = if defined(cutadapt.both_surviving_cut) then cutadapt.both_surviving_cut else "no primers were cut",
+        cut_input_reads = if defined(cutadapt_kraken.input_reads_cut) then cutadapt_kraken.input_reads_cut else "cut_primers is false",
+        cut_both_surviving = if defined(cutadapt_kraken.both_surviving_cut) then cutadapt_kraken.both_surviving_cut else "no primers were cut",
         host_input_reads = host_filter.input_reads_host,
         host_both_surviving = host_filter.both_surviving_host,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-    }
+      }
 
-    call preprocessing.FastQC as fastqc_trimed_R1 {
+      call preprocessing.FastQC as fastqc_trimed_R1 {
         input:
         fastq = host_filter.host_filtered_fastq_1,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    }
+      }
 
-    call preprocessing.FastQC as fastqc_trimed_R2 {
+      call preprocessing.FastQC as fastqc_trimed_R2 {
         input:
         fastq = host_filter.host_filtered_fastq_2,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    }
+      }
 
-    call kraken2.Kraken2 as kraken2 {
+      call kraken2.Kraken2 as kraken2 {
         input:
         fastq_1 = host_filter.host_filtered_fastq_1,
         fastq_2 = host_filter.host_filtered_fastq_2,
         sample_name = sample_name,
-        kraken2_classifier = kraken2_standard_8gb,
+        kraken2_classifier = kraken2_ncbi,
         threads = 1,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
-    }
+      }
 
-    call kraken2.Bracken as bracken {
+      call kraken2.Bracken as bracken {
         input:
         sample_name = sample_name,
         kraken_report = kraken2.report_txt,
-        kraken2_classifier = kraken2_standard_8gb,
+        kraken2_classifier = kraken2_ncbi,
         level = kraken_level,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bracken:2.8--dcb3e47"
-    }
+      }
 
-    call kraken2.Krona as krona_kraken {
+      call kraken2.Krona as krona_kraken {
         input:
         sample_name = sample_name,
         report = kraken2.report_txt,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/krona:2.8.1"
-    }
+      }
 
-    call kraken2.Kraken2 as kraken2_vir {
-        input:
-        fastq_1 = host_filter.host_filtered_fastq_1,
-        fastq_2 = host_filter.host_filtered_fastq_2,
-        sample_name = sample_name,
-        kraken2_classifier = kraken2_virus,
-        threads = 1,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
-    }
-
-    call kraken2.Bracken as bracken_vir {
-        input:
-        sample_name = sample_name,
-        kraken_report = kraken2_vir.report_txt,
-        kraken2_classifier = kraken2_virus,
-        level = kraken_level,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bracken:2.8--dcb3e47"
-    }
-
-
-    call irma.Irma as irma_measles {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "MEASLES",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_measles.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_measles {
+      if (cut_primers) {
+        call preprocessing.Cutadapt as cutadapt_dada2 {
             input:
+            fastq_1 = fastq_1,
+            fastq_2 = fastq_2,
             sample_name = sample_name,
-            module_irma = "MEASLES",
-            irma_qc = irma_measles.irma_qc,
-            reference_fasta = reference_fasta_measles,
-            irma_fasta = irma_measles.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+            primer_left = primer_left,
+            primer_right = primer_right,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/cutadapt:4.4"
         }
+      }
 
-        call irma.Blast as blast_measles {
+      if (microb_16s) {
+        call dada2.Dada2 as dada2_microb_16s {
             input:
+            fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
+            fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
             sample_name = sample_name,
-            module_irma = "MEASLES",
-            fasta_files = irma_measles.irma_fasta,
-            db = "MeaslesDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
+            trim_f = trim_f,
+            trim_r = trim_r,
+            trunc_q = trunc_q,
+            trunc_f = trunc_f,
+            trunc_r = trunc_r,
+            minOverlap = minOverlap,
+            dada2_classifier = silva_138,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/dada2:1.16"
         }
+      }
 
-        call irma.Report as report_measles {
+      if (fungi_18s) {
+        call dada2.Dada2 as dada2_fungi_18s {
             input:
+            fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
+            fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
             sample_name = sample_name,
-            module_irma = "MEASLES",
-            blast_res = blast_measles.blast_res,
-            irma_type = irma_qc_measles.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+            trim_f = trim_f,
+            trim_r = trim_r,
+            trunc_q = trunc_q,
+            trunc_f = trunc_f,
+            trunc_r = trunc_r,
+            minOverlap = minOverlap,
+            dada2_classifier = pr2,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/dada2:1.16"
         }
-    }
+      }
 
-    call irma.Irma as irma_adeno {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "ADENO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_adeno.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_adeno {
+      if (fungi_its) {
+        call dada2.Dada2 as dada2_fungi_its  {
             input:
+            fastq_1 = if cut_primers then cutadapt_dada2.cut_fastq_1 else fastq_1,
+            fastq_2 = if cut_primers then cutadapt_dada2.cut_fastq_2 else fastq_2,
             sample_name = sample_name,
-            module_irma = "ADENO",
-            irma_qc = irma_adeno.irma_qc,
-            reference_fasta = reference_fasta_adeno,
-            irma_fasta = irma_adeno.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+            trim_f = trim_f,
+            trim_r = trim_r,
+            trunc_q = trunc_q,
+            trunc_f = trunc_f,
+            trunc_r = trunc_r,
+            minOverlap = minOverlap,
+            dada2_classifier = unite_fungi,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/dada2:1.16"
         }
-
-        call irma.Blast as blast_adeno {
-            input:
-            sample_name = sample_name,
-            module_irma = "ADENO",
-            fasta_files = irma_adeno.irma_fasta,
-            db = "MastadenovirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_adeno {
-            input:
-            sample_name = sample_name,
-            module_irma = "ADENO",
-            blast_res = blast_adeno.blast_res,
-            irma_type = irma_qc_adeno.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_pneumo {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "PNEUMO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_pneumo.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_pneumo {
-            input:
-            sample_name = sample_name,
-            module_irma = "PNEUMO",
-            irma_qc = irma_pneumo.irma_qc,
-            reference_fasta = reference_fasta_pneumo,
-            irma_fasta = irma_pneumo.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_pneumo {
-            input:
-            sample_name = sample_name,
-            module_irma = "PNEUMO",
-            fasta_files = irma_pneumo.irma_fasta,
-            db = "OrthopneumovirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_pneumo {
-            input:
-            sample_name = sample_name,
-            module_irma = "PNEUMO",
-            blast_res = blast_pneumo.blast_res,
-            irma_type = irma_qc_pneumo.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_boca {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "BOCA",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_boca.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_boca {
-            input:
-            sample_name = sample_name,
-            module_irma = "BOCA",
-            irma_qc = irma_boca.irma_qc,
-            reference_fasta = reference_fasta_boca,
-            irma_fasta = irma_boca.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_boca {
-            input:
-            sample_name = sample_name,
-            module_irma = "BOCA",
-            fasta_files = irma_boca.irma_fasta,
-            db = "BocaparvovirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_boca {
-            input:
-            sample_name = sample_name,
-            module_irma = "BOCA",
-            blast_res = blast_boca.blast_res,
-            irma_type = irma_qc_boca.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_corona {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "CORONA",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_corona.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_corona {
-            input:
-            sample_name = sample_name,
-            module_irma = "CORONA",
-            irma_qc = irma_corona.irma_qc,
-            reference_fasta = reference_fasta_corona,
-            irma_fasta = irma_corona.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_corona {
-            input:
-            sample_name = sample_name,
-            module_irma = "CORONA",
-            fasta_files = irma_corona.irma_fasta,
-            db = "CoronavirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_corona {
-            input:
-            sample_name = sample_name,
-            module_irma = "CORONA",
-            blast_res = blast_corona.blast_res,
-            irma_type = irma_qc_corona.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_respiro {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "RESPIRO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_respiro.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_respiro {
-            input:
-            sample_name = sample_name,
-            module_irma = "RESPIRO",
-            irma_qc = irma_respiro.irma_qc,
-            reference_fasta = reference_fasta_respiro,
-            irma_fasta = irma_respiro.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_respiro {
-            input:
-            sample_name = sample_name,
-            module_irma = "RESPIRO",
-            fasta_files = irma_respiro.irma_fasta,
-            db = "RespirovirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_respiro {
-            input:
-            sample_name = sample_name,
-            module_irma = "RESPIRO",
-            blast_res = blast_respiro.blast_res,
-            irma_type = irma_qc_respiro.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_rhino {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "RHINO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_rhino.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_rhino {
-            input:
-            sample_name = sample_name,
-            module_irma = "RHINO",
-            irma_qc = irma_rhino.irma_qc,
-            reference_fasta = reference_fasta_rhino,
-            irma_fasta = irma_rhino.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_rhino {
-            input:
-            sample_name = sample_name,
-            module_irma = "RHINO",
-            fasta_files = irma_rhino.irma_fasta,
-            db = "RhinovirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_rhino {
-            input:
-            sample_name = sample_name,
-            module_irma = "RHINO",
-            blast_res = blast_rhino.blast_res,
-            irma_type = irma_qc_rhino.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_rubula {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "RUBULA",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_rubula.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_rubula {
-            input:
-            sample_name = sample_name,
-            module_irma = "RUBULA",
-            irma_qc = irma_rubula.irma_qc,
-            reference_fasta = reference_fasta_rubula,
-            irma_fasta = irma_rubula.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_rubula {
-            input:
-            sample_name = sample_name,
-            module_irma = "RUBULA",
-            fasta_files = irma_rubula.irma_fasta,
-            db = "OrthorubulavirusDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_rubula {
-            input:
-            sample_name = sample_name,
-            module_irma = "RUBULA",
-            blast_res = blast_rubula.blast_res,
-            irma_type = irma_qc_rubula.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_metapneumo {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "METAPMEUMO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_metapneumo.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_metapneumo {
-            input:
-            sample_name = sample_name,
-            module_irma = "METAPMEUMO",
-            irma_qc = irma_metapneumo.irma_qc,
-            reference_fasta = reference_fasta_metapneumo,
-            irma_fasta = irma_metapneumo.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_metapneumo {
-            input:
-            sample_name = sample_name,
-            module_irma = "METAPMEUMO",
-            fasta_files = irma_metapneumo.irma_fasta,
-            db = "MetapneumoDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0"
-        }
-
-        call irma.Report as report_metapneumo {
-            input:
-            sample_name = sample_name,
-            module_irma = "METAPMEUMO",
-            blast_res = blast_metapneumo.blast_res,
-            irma_type = irma_qc_metapneumo.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-    }
-
-    call irma.Irma as irma_cov {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "CoV",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_cov.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_cov {
-            input:
-            sample_name = sample_name,
-            module_irma = "CoV",
-            irma_qc = irma_cov.irma_qc,
-            reference_fasta = reference_fasta_cov,
-            irma_fasta = irma_cov.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Report as report_cov {
-            input:
-            sample_name = sample_name,
-            module_irma = "CoV",
-            irma_type = irma_qc_cov.irma_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call sarscov2.pangolin_one_sample {
-            input:
-                genome_fasta = select_first(irma_cov.irma_fasta),
-                max_ambig = 0.90,
-                min_length = 2000,
-                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.29",
-                inference_usher=false
-        }
-    }
-
-    call irma.Irma as irma_flu {
-        input:
-        trim_R1 = host_filter.host_filtered_fastq_1,
-        trim_R2 = host_filter.host_filtered_fastq_2,
-        module_irma = "FLU",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
-    }
-
-    if (irma_flu.proceed == "yes") {
-
-        call irma.IrmaQC as irma_qc_flu {
-            input:
-            sample_name = sample_name,
-            module_irma = "FLU",
-            irma_qc = irma_flu.irma_qc,
-            reference_fasta = reference_fasta_flu,
-            irma_fasta = irma_flu.irma_fasta,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call irma.Blast as blast_flu {
-            input:
-            sample_name = sample_name,
-            module_irma = "FLU",
-            fasta_files = irma_flu.irma_fasta,
-            db = "influenzaDB",
-            threads = threads,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/blast:2.9.0-flu"
-        }
-
-        call irma.Report as report_flu {
-            input:
-            sample_name = sample_name,
-            module_irma = "FLU",
-            blast_res = blast_flu.blast_res,
-            irma_type = irma_flu.flu_type,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
-
-        call nextclade.Nextclade as nextclade_flu_ha {
-            input:
-            fasta = irma_flu.ha_fasta,
-            ref_name = "HA_wis_67_2022",
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/nextclade:2.11.0-flu"
-        }
-
-        if (nextclade_flu_ha.proceed == "yes") {
-
-            call nextclade.NextcladeParse as nextclade_parse_flu_ha {
-                input:
-                nextclade_tsv = nextclade_flu_ha.nextclade_tsv,
-                search_antigenic_mut = "yes",
-                ref_name = "HA_wis_67_2022",
-                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-            }
-        }
-
-        call nextclade.Nextclade as nextclade_flu_na {
-            input:
-            fasta = irma_flu.na_fasta,
-            ref_name = "NA_wis_67_2022",
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/nextclade:2.11.0-flu"
-        }
-
-        if (nextclade_flu_na.proceed == "yes") {
-            call nextclade.NextcladeParse as nextclade_parse_flu_na {
-                input:
-                nextclade_tsv = nextclade_flu_na.nextclade_tsv,
-                search_antigenic_mut = "no",
-                ref_name = "NA_wis_67_2022",
-                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-            }
-        }
-
-        call summary_report.SummaryReport as summary_report_flu {
-            input:
-            sample_name = sample_name,
-            irma_report = report_flu.report,
-            nextclade_HA_report = nextclade_parse_flu_ha.nextclade_json,
-            nextclade_NA_report = nextclade_parse_flu_na.nextclade_json,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
-        }
+      }
     }
 
     output {
-        File fastqc_row_R1_html = fastqc_row_R1.summary_html
-        File fastqc_row_R2_html = fastqc_row_R2.summary_html
-        File fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
-        File fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
-        File preprocessing_qc_json = preprocessing_qc.report_json
-        File? measles_qc_json = irma_qc_measles.irma_qc_json
-        File? measles_json = report_measles.report
-        File? adeno_qc_json = irma_qc_adeno.irma_qc_json
-        File? adeno_json = report_adeno.report
-        File? pneumo_qc_json = irma_qc_pneumo.irma_qc_json
-        File? pneumo_json = report_pneumo.report
-        File? boca_qc_json = irma_qc_boca.irma_qc_json
-        File? boca_json = report_boca.report
-        File? corona_qc_json = irma_qc_corona.irma_qc_json
-        File? corona_json = report_corona.report
-        File? respiro_qc_json = irma_qc_respiro.irma_qc_json
-        File? respiro_json = report_respiro.report
-        File? rhino_qc_json = irma_qc_rhino.irma_qc_json
-        File? rhino_json = report_rhino.report
-        File? rubula_qc_json = irma_qc_rubula.irma_qc_json
-        File? rubula_json = report_rubula.report
-        File? metapneumo_qc_json = irma_qc_metapneumo.irma_qc_json
-        File? metapneumo_json = report_metapneumo.report
-        File? cov_qc_json = irma_qc_cov.irma_qc_json
-        File? cov_json = report_cov.report
-        File? flu_qc_json = irma_qc_flu.irma_qc_json
-        File? flu_json = report_flu.report
-        File kraken_txt = kraken2.report_txt
-        File bracken_txt = bracken.report_txt
-        File krona_kraken_html = krona_kraken.report_html
-        File kraken_virus_txt = kraken2_vir.report_txt
-        File bracken_virus_txt = bracken_vir.report_txt
-        File? HA_nextclade_tsv = nextclade_flu_ha.nextclade_tsv
-        File? NA_nextclade_tsv = nextclade_flu_na.nextclade_tsv
-        File? HA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
-        File? NA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
-        String? HA_nextclade_coverage_percentage = nextclade_flu_ha.coverage_percentage
-        String? NA_nextclade_coverage_percentage = nextclade_flu_na.coverage_percentage
-        File? summary_report_json = summary_report_flu.report_json
-        File host_filter_summary = host_filter.summary_txt
-        String? pango_lineage            = pangolin_one_sample.pango_lineage
-        String? scorpio_call             = pangolin_one_sample.scorpio_call
-        String? pangolin_conflicts       = pangolin_one_sample.pangolin_conflicts
-        String? pangolin_notes           = pangolin_one_sample.pangolin_notes
-        File?   pango_lineage_report     = pangolin_one_sample.pango_lineage_report
-        String? pangolin_usher_version   = pangolin_one_sample.pangolin_usher_version
-        String? pangolin_version         = pangolin_one_sample.pangolin_version
-        String? pangolearn_version       = pangolin_one_sample.pangolearn_version         
+        File? fastqc_row_R1_html = fastqc_row_R1.summary_html
+        File? fastqc_row_R2_html = fastqc_row_R2.summary_html
+        File? fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
+        File? fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
+        File? preprocessing_qc_json = preprocessing_qc.report_json
+        File? host_filter_summary = host_filter.summary_txt
+        File? kraken_txt = kraken2.report_txt
+        File? bracken_txt = bracken.report_txt
+        File? krona_kraken_html = krona_kraken.report_html
+        File? dada2_microb_16s_tsv = dada2_microb_16s.seqtab_nochim_tsv
+        File? stat_dada2_microb_16s_tsv = dada2_microb_16s.stat_tsv
+        File? dada2_fungi_18s_tsv = dada2_fungi_18s.seqtab_nochim_tsv
+        File? stat_dada2_fungi_18s_tsv = dada2_fungi_18s.stat_tsv
+        File? dada2_fungi_its_tsv = dada2_fungi_its.seqtab_nochim_tsv
+        File? stat_dada2_fungi_its_tsv = dada2_fungi_its.stat_tsv
     }
+
 }
