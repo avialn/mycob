@@ -1,5 +1,8 @@
 #!/bin/bash
 
+#передать токен в метаданных
+echo y0_AgAAAABoSQMMAATuwQAAAAEPBiBJAAAHRjWkk8JN_Yaquat-84oq6DlEfw | docker login --username oauth --password-stdin cr.yandex
+
 sudo shutdown -h +360
 export USER_ID=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/attributes/user-id)
 export TASK_ID=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/attributes/task-id)
