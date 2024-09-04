@@ -3,6 +3,13 @@
 #раскомментировать при создании нового образа
 #echo y0_AgAAAABoSQMMAATuwQAAAAEPBiBJAAAHRjWkk8JN_Yaquat-84oq6DlEfw | docker login --username oauth --password-stdin cr.yandex
 
+sudo apt install s3fs
+echo YCAJEL9e2zJeYFGEkzDgb9Eut:YCM5HH5BL-VQKBl9CGfPewkhP7PT4mtUIBY29bZZ > ~/.passwd-s3fs
+s3fs s3fs-call-logs /mount/home/cromwell/mycob-cromwell-logs/call_logs -o passwd_file=$HOME/.passwd-s3fs \
+    -o url=https://storage.yandexcloud.net -o use_path_request_style
+s3fs s3fs-wf-logs /mount/home/cromwell/mycob-cromwell-logs/wf_logs -o passwd_file=$HOME/.passwd-s3fs \
+    -o url=https://storage.yandexcloud.net -o use_path_request_style
+
 sudo shutdown -h +360
 export USER_ID=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/attributes/user-id)
 export TASK_ID=$(curl -H Metadata-Flavor:Google 169.254.169.254/computeMetadata/v1/instance/attributes/task-id)
