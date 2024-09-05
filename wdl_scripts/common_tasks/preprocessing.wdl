@@ -18,7 +18,7 @@ task Validatefastq {
 
     runtime {
         docker: "~{docker}"
-        #continueOnReturnCode: true
+        continueOnReturnCode: true
     }
 
     output {
