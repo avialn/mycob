@@ -1,5 +1,31 @@
 version 1.0
 
+task Validatefastq {
+
+    input {
+        File fastq_1
+        File fastq_2
+        String docker
+    }
+
+    command <<<
+        set -ex -o pipefail
+
+        #https://biopet.github.io/validatefastq/0.1.1/index.html#installation
+        java -jar /opt/validatefastq/validatefastq-assembly-0.1.1.jar -i ~{fastq_1} -j ~{fastq_2}  > validatefastq.txt 2>&1
+
+    >>>
+
+    runtime {
+        docker: "~{docker}"
+        #continueOnReturnCode: true
+    }
+
+    output {
+        File validatefastq_out = "validatefastq.txt"
+    }
+}
+
 task CheckInput {
 
     input {
