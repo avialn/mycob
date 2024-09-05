@@ -19,8 +19,8 @@ workflow processing {
 
     input {
         Array[Array[String]] Files
-	    Int max_retries = 1
-	    Int compression_level = 5
+	Int max_retries = 1
+	Int compression_level = 5
         String TaskID
         String Attempt
         String TableID = TaskID + "-" + Attempt
@@ -55,7 +55,12 @@ workflow processing {
         Int lines_number = length(Files)
     }
 
-
+    call preprocessing.Validatefastq as validatefastq {
+        input:
+        fastq_1 = Files[0][0],
+        fastq_2 = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
+    }
 
     call Utils.trimm as trimm {
         input:
@@ -717,6 +722,7 @@ workflow processing {
         File?   pango_lineage_report     = pangolin_one_sample.pango_lineage_report
         String? pangolin_usher_version   = pangolin_one_sample.pangolin_usher_version
         String? pangolin_version         = pangolin_one_sample.pangolin_version
-        String? pangolearn_version       = pangolin_one_sample.pangolearn_version         
+        String? pangolearn_version       = pangolin_one_sample.pangolearn_version  
+        File validatefastq_txt = validatefastq.validatefastq_out
     }
 }
