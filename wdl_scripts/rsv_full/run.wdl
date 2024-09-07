@@ -55,48 +55,45 @@ workflow processing {
         Int lines_number = length(Files)
     }
 
-    call preprocessing.Validatefastq as validatefastq {
-        input:
-        fastq_1 = Files[0][0],
-        fastq_2 = Files[0][1],
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
-    }
-
-    #call Utils.trimm as trimm {
+    #call preprocessing.Validatefastq as validatefastq {
     #    input:
-    #        fastq_1 = Files[0][0],
-    #        fastq_2 = Files[0][1],
-    #        lines_number = lines_number,
-    #        sample_id = SampleID,
-    #        minlen = 36,
-    #        compression_level = compression_level,
-    #        max_retries = max_retries,
-    #        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    #    fastq_1 = Files[0][0],
+    #    fastq_2 = Files[0][1],
+    #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
     #}
+
+    call Utils.trimm as trimm {
+        input:
+            fastq_1 = Files[0][0],
+            fastq_2 = Files[0][1],
+            lines_number = lines_number,
+            sample_id = SampleID,
+            minlen = 36,
+            compression_level = compression_level,
+            max_retries = max_retries,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    }
 
     #String fastq_1 = trimm.R1_file
     #String fastq_2 = trimm.R2_file
-
-    String fastq_1 = Files[0][0]
-    String fastq_2 = Files[0][1]
     
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
-        fastq = Files[0][0],
+        fastq = trimm.R1_file,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
     call preprocessing.FastQC as fastqc_row_R2 {
         input:
-        fastq = Files[0][1],
+        fastq = trimm.R2_file,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
 
     call preprocessing.Trimmomatic as trimmomatic {
         input:
-        fastq_1 = fastq_1,
-        fastq_2 = fastq_2,
+        fastq_1 = trimm.R1_file,
+        fastq_2 = trimm.R2_file,
         sample_name = sample_name,
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
