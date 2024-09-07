@@ -77,6 +77,9 @@ workflow processing {
     #String fastq_1 = trimm.R1_file
     #String fastq_2 = trimm.R2_file
 
+    String fastq_1 = Files[0][0]
+    String fastq_2 = Files[0][1]
+    
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
         fastq = Files[0][0],
