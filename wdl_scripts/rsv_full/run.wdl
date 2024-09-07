@@ -723,6 +723,6 @@ workflow processing {
         String? pangolin_usher_version   = pangolin_one_sample.pangolin_usher_version
         String? pangolin_version         = pangolin_one_sample.pangolin_version
         String? pangolearn_version       = pangolin_one_sample.pangolearn_version  
-        File validatefastq_txt = validatefastq.validatefastq_out
+        #File validatefastq_txt = validatefastq.validatefastq_out
     }
 }
