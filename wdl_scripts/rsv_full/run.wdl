@@ -62,20 +62,20 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
     }
 
-    call Utils.trimm as trimm {
-        input:
-            fastq_1 = Files[0][0],
-            fastq_2 = Files[0][1],
-            lines_number = lines_number,
-            sample_id = SampleID,
-            minlen = 36,
-            compression_level = compression_level,
-            max_retries = max_retries,
-            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
-    }
+    #call Utils.trimm as trimm {
+    #    input:
+    #        fastq_1 = Files[0][0],
+    #        fastq_2 = Files[0][1],
+    #        lines_number = lines_number,
+    #        sample_id = SampleID,
+    #        minlen = 36,
+    #        compression_level = compression_level,
+    #        max_retries = max_retries,
+    #        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    #}
 
-    String fastq_1 = trimm.R1_file
-    String fastq_2 = trimm.R2_file
+    #String fastq_1 = trimm.R1_file
+    #String fastq_2 = trimm.R2_file
 
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
