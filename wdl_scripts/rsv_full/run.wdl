@@ -70,6 +70,76 @@ workflow processing {
     String fastq_1 = trimm.R1_file
     String fastq_2 = trimm.R2_file
 
+    call preprocessing.FastQC as fastqc_row_R1 {
+        input:
+        fastq = Files[0][0],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
+
+    call preprocessing.FastQC as fastqc_row_R2 {
+        input:
+        fastq = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
+
+
+    call preprocessing.Trimmomatic as trimmomatic {
+        input:
+        fastq_1 = fastq_1,
+        fastq_2 = fastq_2,
+        sample_name = sample_name,
+        threads = threads,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
+    }
+
+
+    if (cut_primers) {
+        call preprocessing.Cutadapt as cutadapt {
+            input:
+            fastq_1 = trimmomatic.trim_fastq_1,
+            fastq_2 = trimmomatic.trim_fastq_2,
+            sample_name = sample_name,
+            primer_left = primer_left,
+            primer_right = primer_right,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/cutadapt:4.4"
+        }
+    }
+
+    call preprocessing.HostFilter as host_filter {
+        input:
+        fastq_1 = if cut_primers then cutadapt.cut_fastq_1 else trimmomatic.trim_fastq_1,
+        fastq_2 = if cut_primers then cutadapt.cut_fastq_2 else trimmomatic.trim_fastq_2,
+        sample_name = sample_name,
+        index_tar = if transcriptome_filtering then index_transcriptome else index_genome,
+        threads = threads,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bowtie2:2.5.1"
+    }
+
+    call preprocessing.PreprocessingQC as preprocessing_qc {
+        input:
+        sample_name = sample_name,
+        trim_input_reads = trimmomatic.input_reads_trim,
+        trim_both_surviving = trimmomatic.both_surviving_trim,
+        cut_input_reads = if defined(cutadapt.input_reads_cut) then cutadapt.input_reads_cut else "cut_primers is false",
+        cut_both_surviving = if defined(cutadapt.both_surviving_cut) then cutadapt.both_surviving_cut else "no primers were cut",
+        host_input_reads = host_filter.input_reads_host,
+        host_both_surviving = host_filter.both_surviving_host,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+    }
+
+    call preprocessing.FastQC as fastqc_trimed_R1 {
+        input:
+        fastq = host_filter.host_filtered_fastq_1,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
+
+    call preprocessing.FastQC as fastqc_trimed_R2 {
+        input:
+        fastq = host_filter.host_filtered_fastq_2,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
+
+
     output {
     String fastq_R1 = fastq_1
     String fastq_R2 = fastq_2
