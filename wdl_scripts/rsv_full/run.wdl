@@ -139,6 +139,51 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
+    call kraken2.Kraken2 as kraken2 {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        sample_name = sample_name,
+        kraken2_classifier = kraken2_standard_8gb,
+        threads = 1,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
+    }
+
+    call kraken2.Bracken as bracken {
+        input:
+        sample_name = sample_name,
+        kraken_report = kraken2.report_txt,
+        kraken2_classifier = kraken2_standard_8gb,
+        level = kraken_level,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bracken:2.8--dcb3e47"
+    }
+
+    #call kraken2.Krona as krona_kraken {
+    #    input:
+    #    sample_name = sample_name,
+    #    report = kraken2.report_txt,
+    #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/krona:2.8.1"
+    #}
+
+    call kraken2.Kraken2 as kraken2_vir {
+        input:
+        fastq_1 = host_filter.host_filtered_fastq_1,
+        fastq_2 = host_filter.host_filtered_fastq_2,
+        sample_name = sample_name,
+        kraken2_classifier = kraken2_virus,
+        threads = 1,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/kraken2:2.1.3"
+    }
+
+    call kraken2.Bracken as bracken_vir {
+        input:
+        sample_name = sample_name,
+        kraken_report = kraken2_vir.report_txt,
+        kraken2_classifier = kraken2_virus,
+        level = kraken_level,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bracken:2.8--dcb3e47"
+    }
+
 
     output {
     String fastq_R1 = fastq_1
