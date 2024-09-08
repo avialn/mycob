@@ -69,4 +69,9 @@ workflow processing {
 
     String fastq_1 = trimm.R1_file
     String fastq_2 = trimm.R2_file
+
+    output {
+    String fastq_1
+    String fastq_2
+    }    
 }
