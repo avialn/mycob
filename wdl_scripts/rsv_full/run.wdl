@@ -62,6 +62,12 @@ workflow processing {
     #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
     #}
 
+   call Utils.concat as concat {
+        input:
+            tFiles = transpose(Files),
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    }
+
     call Utils.trimm as trimm {
         input:
             fastq_1 = Files[0][0],
@@ -74,26 +80,26 @@ workflow processing {
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
 
-    #String fastq_1 = trimm.R1_file
-    #String fastq_2 = trimm.R2_file
+    String fastq_1 = trimm.R1_file
+    String fastq_2 = trimm.R2_file
     
     call preprocessing.FastQC as fastqc_row_R1 {
         input:
-        fastq = trimm.R1_file,
+        fastq = Files[0][0],
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
     call preprocessing.FastQC as fastqc_row_R2 {
         input:
-        fastq = trimm.R2_file,
+        fastq = Files[0][1],
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
 
     call preprocessing.Trimmomatic as trimmomatic {
         input:
-        fastq_1 = trimm.R1_file,
-        fastq_2 = trimm.R2_file,
+        fastq_1 = fastq_1,
+        fastq_2 = fastq_2,
         sample_name = sample_name,
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
