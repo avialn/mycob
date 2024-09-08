@@ -628,6 +628,44 @@ workflow processing {
         }
     }
 
+    call irma.Irma as irma_cov {
+        input:
+        trim_R1 = host_filter.host_filtered_fastq_1,
+        trim_R2 = host_filter.host_filtered_fastq_2,
+        module_irma = "CoV",
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
+    }
+
+    if (irma_cov.proceed == "yes") {
+
+        call irma.IrmaQC as irma_qc_cov {
+            input:
+            sample_name = sample_name,
+            module_irma = "CoV",
+            irma_qc = irma_cov.irma_qc,
+            reference_fasta = reference_fasta_cov,
+            irma_fasta = irma_cov.irma_fasta,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+        }
+
+        call irma.Report as report_cov {
+            input:
+            sample_name = sample_name,
+            module_irma = "CoV",
+            irma_type = irma_qc_cov.irma_type,
+            docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
+        }
+
+        call sarscov2.pangolin_one_sample {
+            input:
+                genome_fasta = select_first(irma_cov.irma_fasta),
+                max_ambig = 0.90,
+                min_length = 2000,
+                docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/pangolin:4.3-data-1.29",
+                inference_usher=false
+        }
+    }
+
 
     output {
     String fastq_R1 = fastq_1
