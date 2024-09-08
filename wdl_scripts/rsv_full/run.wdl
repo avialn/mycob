@@ -66,4 +66,7 @@ workflow processing {
             max_retries = max_retries,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
+
+    String fastq_1 = trimm.R1_file
+    String fastq_2 = trimm.R2_file
 }
