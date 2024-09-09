@@ -682,6 +682,7 @@ workflow processing {
         File validatefastq_txt = validatefastq.validatefastq_out
         String check_input_str = check_input.count_in
         String both_surviving_trim_str = trimmomatic.both_surviving_trim
+        String? both_surviving_cut_str = cutadapt.both_surviving_cut
 
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
         File fastqc_row_R2_html = fastqc_row_R2.summary_html
