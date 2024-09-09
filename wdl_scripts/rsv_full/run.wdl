@@ -680,7 +680,7 @@ workflow processing {
 
     output {
         File validatefastq_txt = validatefastq.validatefastq_out
-        File check_input_txt = check_input.count_in
+        String check_input_txt = check_input.count_in
 
         File fastqc_row_R1_html = fastqc_row_R1.summary_html
         File fastqc_row_R2_html = fastqc_row_R2.summary_html
