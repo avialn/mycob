@@ -51,8 +51,22 @@ workflow processing {
         File HA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/HA_wis_67_2022.fasta"
         File NA_ref = "/home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/NA_wis_67_2022.fasta"
         File snpeff_config = "snpEff_5.2/snpEff.config"
-        File snpeff_db = "snpEff_5.2/data.zip"        
+        File snpeff_db = "snpEff_5.2/data.zip"
         Int lines_number = length(Files)
+    }
+
+    call preprocessing.Validatefastq as validatefastq {
+        input:
+        fastq_1 = Files[0][0],
+        fastq_2 = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
+    }
+
+    call preprocessing.CheckInput as check_input {
+        input:
+        fastq = Files[0][0],
+        min_reads = 500,
+        docker = "resouer/ubuntu-bc:latest"
     }
 
     call Utils.trimm as trimm {
@@ -82,7 +96,6 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
     }
 
-
     call preprocessing.Trimmomatic as trimmomatic {
         input:
         fastq_1 = fastq_1,
@@ -91,7 +104,6 @@ workflow processing {
         threads = threads,
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/trimmomatic:0.39"
     }
-
 
     if (cut_primers) {
         call preprocessing.Cutadapt as cutadapt {
@@ -127,17 +139,17 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
     }
 
-    call preprocessing.FastQC as fastqc_trimed_R1 {
-        input:
-        fastq = host_filter.host_filtered_fastq_1,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    }
+    #call preprocessing.FastQC as fastqc_trimed_R1 {
+    #    input:
+    #    fastq = host_filter.host_filtered_fastq_1,
+    #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    #}
 
-    call preprocessing.FastQC as fastqc_trimed_R2 {
-        input:
-        fastq = host_filter.host_filtered_fastq_2,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    }
+    #call preprocessing.FastQC as fastqc_trimed_R2 {
+    #    input:
+    #    fastq = host_filter.host_filtered_fastq_2,
+    #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+   # }
 
     call kraken2.Kraken2 as kraken2 {
         input:
@@ -189,7 +201,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "MEASLES",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_measles.proceed == "yes") {
@@ -229,7 +241,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "ADENO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_adeno.proceed == "yes") {
@@ -269,7 +281,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "PNEUMO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_pneumo.proceed == "yes") {
@@ -309,7 +321,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "BOCA",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_boca.proceed == "yes") {
@@ -349,7 +361,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "CORONA",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_corona.proceed == "yes") {
@@ -389,7 +401,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "RESPIRO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_respiro.proceed == "yes") {
@@ -429,7 +441,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "RHINO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_rhino.proceed == "yes") {
@@ -469,7 +481,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "RUBULA",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_rubula.proceed == "yes") {
@@ -509,7 +521,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "METAPMEUMO",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_metapneumo.proceed == "yes") {
@@ -549,7 +561,7 @@ workflow processing {
         trim_R1 = host_filter.host_filtered_fastq_1,
         trim_R2 = host_filter.host_filtered_fastq_2,
         module_irma = "FLU",
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.1"
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/irma:0.6.4"
     }
 
     if (irma_flu.proceed == "yes") {
@@ -666,9 +678,57 @@ workflow processing {
         }
     }
 
-
     output {
-    String fastq_R1 = fastq_1
-    String fastq_R2 = fastq_2
-    }    
+        File validatefastq_txt = validatefastq.validatefastq_out
+        File check_input_txt = check_input.count_in
+
+        File fastqc_row_R1_html = fastqc_row_R1.summary_html
+        File fastqc_row_R2_html = fastqc_row_R2.summary_html
+        #File fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
+        #File fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
+        File preprocessing_qc_json = preprocessing_qc.report_json
+        File? measles_qc_json = irma_qc_measles.irma_qc_json
+        File? measles_json = report_measles.report
+        File? adeno_qc_json = irma_qc_adeno.irma_qc_json
+        File? adeno_json = report_adeno.report
+        File? pneumo_qc_json = irma_qc_pneumo.irma_qc_json
+        File? pneumo_json = report_pneumo.report
+        File? boca_qc_json = irma_qc_boca.irma_qc_json
+        File? boca_json = report_boca.report
+        File? corona_qc_json = irma_qc_corona.irma_qc_json
+        File? corona_json = report_corona.report
+        File? respiro_qc_json = irma_qc_respiro.irma_qc_json
+        File? respiro_json = report_respiro.report
+        File? rhino_qc_json = irma_qc_rhino.irma_qc_json
+        File? rhino_json = report_rhino.report
+        File? rubula_qc_json = irma_qc_rubula.irma_qc_json
+        File? rubula_json = report_rubula.report
+        File? metapneumo_qc_json = irma_qc_metapneumo.irma_qc_json
+        File? metapneumo_json = report_metapneumo.report
+        File? cov_qc_json = irma_qc_cov.irma_qc_json
+        File? cov_json = report_cov.report
+        File? flu_qc_json = irma_qc_flu.irma_qc_json
+        File? flu_json = report_flu.report
+        File kraken_txt = kraken2.report_txt
+        File bracken_txt = bracken.report_txt
+        #File krona_kraken_html = krona_kraken.report_html
+        File kraken_virus_txt = kraken2_vir.report_txt
+        File bracken_virus_txt = bracken_vir.report_txt
+        File? HA_nextclade_tsv = nextclade_flu_ha.nextclade_tsv
+        File? NA_nextclade_tsv = nextclade_flu_na.nextclade_tsv
+        File? HA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        File? NA_nextclade_report_json = nextclade_parse_flu_ha.nextclade_json
+        String? HA_nextclade_coverage_percentage = nextclade_flu_ha.coverage_percentage
+        String? NA_nextclade_coverage_percentage = nextclade_flu_na.coverage_percentage
+        File? summary_report_json = summary_report_flu.report_json
+        File host_filter_summary = host_filter.summary_txt
+        String? pango_lineage            = pangolin_one_sample.pango_lineage
+        String? scorpio_call             = pangolin_one_sample.scorpio_call
+        String? pangolin_conflicts       = pangolin_one_sample.pangolin_conflicts
+        String? pangolin_notes           = pangolin_one_sample.pangolin_notes
+        File?   pango_lineage_report     = pangolin_one_sample.pango_lineage_report
+        String? pangolin_usher_version   = pangolin_one_sample.pangolin_usher_version
+        String? pangolin_version         = pangolin_one_sample.pangolin_version
+        String? pangolearn_version       = pangolin_one_sample.pangolearn_version
+    }
 }
