@@ -40,6 +40,8 @@ task CheckInput {
         count_in="$(zcat ~{fastq} | wc -l)"
         count_in=$((count_in / 4))
 
+        echo $count_in > count_in.txt
+
         if (($count_in>~{min_reads})); then
           proceed="yes"
         else
@@ -55,6 +57,7 @@ task CheckInput {
 
     output {
         String proceed = read_string("proceed.txt")
+        String count_in = read_string("count_in.txt")
     }
 }
 
