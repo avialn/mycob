@@ -82,48 +82,20 @@ workflow processing {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
+    call preprocessing.Validatefastq as validatefastq {
+        input:
+        fastq_1 = Files[0][0],
+        fastq_2 = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
+    }
+
     call Utils.concat as concat {
         input:
             tFiles = transpose(Files),
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
 
-    call preprocessing.Validatefastq as validatefastq {
-        input:
-        fastq_1 = concat.R1_file,
-        fastq_2 = concat.R2_file,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
-    }
-
-    call preprocessing.CheckInput as check_input {
-        input:
-        fastq = concat.R1_file,
-        min_reads = 500,
-        docker = "resouer/ubuntu-bc:latest"
-    }
-
-    #call preprocessing.CheckInput as check_input {
-    #    input:
-    #    fastq = fastq_1,
-    #    min_reads = 500,
-    #    docker = "resouer/ubuntu-bc:latest"
-    #}
-
-    if (check_input.proceed == "yes") {
-
-      call preprocessing.FastQC as fastqc_row_R1 {
-        input:
-        fastq = concat.R1_file,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-      }
-
-      call preprocessing.FastQC as fastqc_row_R2 {
-        input:
-        fastq = concat.R2_file,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-      }
-
-      call Utils.trimm as trimm {
+    call Utils.trimm as trimm {
         input:
             fastq_1 = concat.R1_file,
             fastq_2 = concat.R2_file,
@@ -133,10 +105,32 @@ workflow processing {
             compression_level = compression_level,
             max_retries = max_retries,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
+    }
+
+    String fastq_1 = trimm.R1_file
+    String fastq_2 = trimm.R2_file
+
+
+    call preprocessing.CheckInput as check_input {
+        input:
+        fastq = fastq_1,
+        min_reads = 500,
+        docker = "resouer/ubuntu-bc:latest"
+    }
+
+    if (check_input.proceed == "yes") {
+
+      call preprocessing.FastQC as fastqc_row_R1 {
+        input:
+        fastq = Files[0][0],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
       }
 
-      String fastq_1 = trimm.R1_file
-      String fastq_2 = trimm.R2_file
+      call preprocessing.FastQC as fastqc_row_R2 {
+        input:
+        fastq = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+      }
 
       call preprocessing.Trimmomatic as trimmomatic {
         input:
@@ -188,7 +182,7 @@ workflow processing {
       #}
 
       #call preprocessing.FastQC as fastqc_trimed_R2 {
-      #  input:
+      # input:
       #  fastq = host_filter.host_filtered_fastq_2,
       #  docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
      # }
@@ -217,7 +211,7 @@ workflow processing {
       #  sample_name = sample_name,
       #  report = kraken2.report_txt,
       #  docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/krona:2.8.1"
-     # }
+      #}
 
       if (cut_primers) {
         call preprocessing.Cutadapt as cutadapt_dada2 {
