@@ -82,14 +82,48 @@ workflow processing {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
-
     call Utils.concat as concat {
         input:
             tFiles = transpose(Files),
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
 
-    call Utils.trimm as trimm {
+    call preprocessing.Validatefastq as validatefastq {
+        input:
+        fastq_1 = concat.R1_file,
+        fastq_2 = concat.R2_file,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
+    }
+
+    call preprocessing.CheckInput as check_input {
+        input:
+        fastq = concat.R1_file,
+        min_reads = 500,
+        docker = "resouer/ubuntu-bc:latest"
+    }
+
+    #call preprocessing.CheckInput as check_input {
+    #    input:
+    #    fastq = fastq_1,
+    #    min_reads = 500,
+    #    docker = "resouer/ubuntu-bc:latest"
+    #}
+
+    if (check_input.proceed == "yes") {
+
+      call preprocessing.FastQC as fastqc_row_R1 {
+        input:
+        fastq = concat.R1_file,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+      }
+
+      call preprocessing.FastQC as fastqc_row_R2 {
+        input:
+        fastq = concat.R2_file,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+      }
+
+      call Utils.trimm as trimm {
         input:
             fastq_1 = concat.R1_file,
             fastq_2 = concat.R2_file,
@@ -99,32 +133,10 @@ workflow processing {
             compression_level = compression_level,
             max_retries = max_retries,
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
-    }
-
-    String fastq_1 = trimm.R1_file
-    String fastq_2 = trimm.R2_file
-
-
-    call preprocessing.CheckInput as check_input {
-        input:
-        fastq = fastq_1,
-        min_reads = 500,
-        docker = "resouer/ubuntu-bc:latest"
-    }
-
-    if (check_input.proceed == "yes") {
-
-      call preprocessing.FastQC as fastqc_row_R1 {
-        input:
-        fastq = Files[0][0],
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
       }
 
-      call preprocessing.FastQC as fastqc_row_R2 {
-        input:
-        fastq = Files[0][1],
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-      }
+      String fastq_1 = trimm.R1_file
+      String fastq_2 = trimm.R2_file
 
       call preprocessing.Trimmomatic as trimmomatic {
         input:
@@ -169,17 +181,17 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/python:3"
       }
 
-      call preprocessing.FastQC as fastqc_trimed_R1 {
-        input:
-        fastq = host_filter.host_filtered_fastq_1,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-      }
+      #call preprocessing.FastQC as fastqc_trimed_R1 {
+      #  input:
+      #  fastq = host_filter.host_filtered_fastq_1,
+      #  docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+      #}
 
-      call preprocessing.FastQC as fastqc_trimed_R2 {
-        input:
-        fastq = host_filter.host_filtered_fastq_2,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-      }
+      #call preprocessing.FastQC as fastqc_trimed_R2 {
+      #  input:
+      #  fastq = host_filter.host_filtered_fastq_2,
+      #  docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+     # }
 
       call kraken2.Kraken2 as kraken2 {
         input:
@@ -200,12 +212,12 @@ workflow processing {
         docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/bracken:2.8--dcb3e47"
       }
 
-      call kraken2.Krona as krona_kraken {
-        input:
-        sample_name = sample_name,
-        report = kraken2.report_txt,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/krona:2.8.1"
-      }
+      #call kraken2.Krona as krona_kraken {
+      #  input:
+      #  sample_name = sample_name,
+      #  report = kraken2.report_txt,
+      #  docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/krona:2.8.1"
+     # }
 
       if (cut_primers) {
         call preprocessing.Cutadapt as cutadapt_dada2 {
@@ -272,15 +284,21 @@ workflow processing {
     }
 
     output {
+        File validatefastq_txt = validatefastq.validatefastq_out
+        String check_input_str = check_input.count_in
+        String? both_surviving_trim_str = trimmomatic.both_surviving_trim
+        String? both_surviving_cut_str = cutadapt.both_surviving_cut
+        String? both_surviving_host_str = host_filter.both_surviving_host
+
         File? fastqc_row_R1_html = fastqc_row_R1.summary_html
         File? fastqc_row_R2_html = fastqc_row_R2.summary_html
-        File? fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
-        File? fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
+        #File? fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
+        #File? fastqc_trimed_R2_html = fastqc_trimed_R2.summary_html
         File? preprocessing_qc_json = preprocessing_qc.report_json
         File? host_filter_summary = host_filter.summary_txt
         File? kraken_txt = kraken2.report_txt
         File? bracken_txt = bracken.report_txt
-        File? krona_kraken_html = krona_kraken.report_html
+        #File? krona_kraken_html = krona_kraken.report_html
         File? dada2_microb_16s_tsv = dada2_microb_16s.seqtab_nochim_tsv
         File? stat_dada2_microb_16s_tsv = dada2_microb_16s.stat_tsv
         File? dada2_fungi_18s_tsv = dada2_fungi_18s.seqtab_nochim_tsv
