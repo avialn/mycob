@@ -82,6 +82,12 @@ workflow processing {
         String kraken_level = "S" #(U)nclassified, (R)oot, (D)omain, (K)ingdom (P)hylum, (C)lass, (O)rder, (F)amily, (G)enus, or (S)pecies.
     }
 
+    call preprocessing.Validatefastq as validatefastq {
+        input:
+        fastq_1 = Files[0][0],
+        fastq_2 = Files[0][1],
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
+    }
 
     call Utils.concat as concat {
         input:
@@ -272,6 +278,8 @@ workflow processing {
     }
 
     output {
+        File validatefastq_txt = validatefastq.validatefastq_out
+
         File? fastqc_row_R1_html = fastqc_row_R1.summary_html
         File? fastqc_row_R2_html = fastqc_row_R2.summary_html
         File? fastqc_trimed_R1_html = fastqc_trimed_R1.summary_html
