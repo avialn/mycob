@@ -40,21 +40,8 @@ workflow processing {
             tFiles = transpose(Files),
             docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastp:0.23.4"
     }
-
-    call preprocessing.Validatefastq as validatefastq {
-        input:
-        fastq_1 = concat.R1_file,
-        fastq_2 = concat.R2_file,
-        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/validatefastq:0.1.1 "
-    }
-
-    call preprocessing.CheckInput as check_input {
-        input:
-        fastq = concat.R1_file,
-        min_reads = 500,
-        docker = "resouer/ubuntu-bc:latest"
-    }
-       
+    
+    
     call Utils.trimm as trimm {
         input:
             fastq_1 = concat.R1_file,
@@ -102,17 +89,17 @@ workflow processing {
         }
     }
 
-    #call tasks.FastQC as trimmed_R1_FastQC {
-    #    input:
-    #    fastq = if cut_primers then cutadapt.cut_fastq_1 else trimmomatic.trim_fastq_1,
-    #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    #}
+    call tasks.FastQC as trimmed_R1_FastQC {
+        input:
+        fastq = if cut_primers then cutadapt.cut_fastq_1 else trimmomatic.trim_fastq_1,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
 
-    #call tasks.FastQC as trimmed_R2_FastQC {
-    #    input:
-    #    fastq = if cut_primers then cutadapt.cut_fastq_2 else trimmomatic.trim_fastq_2,
-    #    docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
-    #}
+    call tasks.FastQC as trimmed_R2_FastQC {
+        input:
+        fastq = if cut_primers then cutadapt.cut_fastq_2 else trimmomatic.trim_fastq_2,
+        docker = "cr.yandex/crpl2lv1lkr7g21e6q8g/fastqc:0.12.0"
+    }
 
     call tasks.Bowtie2Filter as bowtie2_filter {
         input:
@@ -237,17 +224,11 @@ workflow processing {
 
 
     output {
-        File validatefastq_txt = validatefastq.validatefastq_out
-        String check_input_str = check_input.count_in
-        String both_surviving_trim_str = trimmomatic.both_surviving_trim
-        String? both_surviving_cut_str = cutadapt.both_surviving_cut
-        String both_surviving_host_str = host_filter.both_surviving_host
-
         File r1_row_fastqc_html = row_R1_FastQC.qc_report_html
         File r2_row_fastqc_html = row_R2_FastQC.qc_report_html
         File? cutadapt_summary_tsv = cutadapt.cutadapt_summary_tsv
-        #File r1_trimmed_fastqc_html = trimmed_R1_FastQC.qc_report_html
-        #File r2_trimmed_fastqc_html = trimmed_R2_FastQC.qc_report_html
+        File r1_trimmed_fastqc_html = trimmed_R1_FastQC.qc_report_html
+        File r2_trimmed_fastqc_html = trimmed_R2_FastQC.qc_report_html
         File fastp_trimm_R1 = trimm.R1_file
         File fastp_trimm_R2 = trimm.R2_file
         File trimmomatic_trimm_R1 = trimmomatic.trim_fastq_1
