@@ -180,13 +180,14 @@ task IrmaQC {
         declare -A data
         for fasta_file in ~{sep=" " irma_fasta}; do
           fasta_name=$(basename "${fasta_file}" .fasta)
-          ref_length=$(grep -A 1 "^>${fasta_name}$" ref.fasta \
+          ref_length=$(grep -A 1 "${fasta_name}" ref.fasta \
           | awk '/^[^>]/ {seq = seq $0} END {print length(seq)}')
           fasta_length=$(cat $fasta_file | awk '/^[^>]/ {seq = seq $0} END {print length(seq)}')
           ratio=$(printf "%.2f%%\n" $(echo "$fasta_length / $ref_length * 100" | bc -l))
           data[$fasta_name]=$ratio
           echo $fasta_name $ref_length $fasta_length $ratio >> ~{sample_name}_~{module_irma}_irma_length.txt
         done
+        #ref_length=$(grep -A 1 "^>${fasta_name}$" ref.fasta \
 
         # writing json short dictionary to zip it in the irma_qc report
         json_data="{"
