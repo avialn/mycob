@@ -70,6 +70,20 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/HA_wis_67_2022.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/NA_wis_67_2022.fasta /home/cromwell/mycob-ref/rsv_full/IRMA_RES/modules/FLU/reference/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/amr/card.json /home/cromwell/mycob-ref/amr/CARD/ |& tee -a /home/cromwell/aws.log
+#gut
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/astrovirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/entero.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/kobuvirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/mastadeno.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/norovirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/parechovirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/rosavirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/rotavirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/salivirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/sapovirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/torovirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/cosavirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/picobina.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
 
 echo $FILES | jq --raw-output '.[] | .[]' | xargs -L1 -I'{}' aws --endpoint-url=https://storage.yandexcloud.net s3 cp {} /home/cromwell/fastq/ |& tee -a /home/cromwell/aws.log
 jq --arg key0 'task-id' --arg value0 ${TASK_ID} --arg key1 'attempt' --arg value1 ${ATTEMPT} '. | .[$key0]=$value0 | .[$key1]=$value1' <<<'{}' > /home/cromwell/labels.json
