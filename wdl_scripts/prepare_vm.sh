@@ -84,6 +84,7 @@ aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refs
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/torovirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/cosavirus.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
 aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/refseq/picobina.fasta /home/cromwell/mycob-ref/gut/refseq/ |& tee -a /home/cromwell/aws.log
+aws --endpoint-url=https://storage.yandexcloud.net s3 cp s3://mycob-ref/gut/rotavirus_metadata.csv /home/cromwell/mycob-ref/gut/ |& tee -a /home/cromwell/aws.log
 
 echo $FILES | jq --raw-output '.[] | .[]' | xargs -L1 -I'{}' aws --endpoint-url=https://storage.yandexcloud.net s3 cp {} /home/cromwell/fastq/ |& tee -a /home/cromwell/aws.log
 jq --arg key0 'task-id' --arg value0 ${TASK_ID} --arg key1 'attempt' --arg value1 ${ATTEMPT} '. | .[$key0]=$value0 | .[$key1]=$value1' <<<'{}' > /home/cromwell/labels.json
