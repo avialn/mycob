@@ -76,7 +76,8 @@ task IrmaGut {
     command <<<
         set -ex -o pipefail
 
-        /opt/flu-amd/IRMA ~{module_irma} ~{trim_R1} ~{trim_R2} irma_res
+        /opt/irma/flu-amd/IRMA ~{module_irma} ~{trim_R1} ~{trim_R2} irma_res
+        #/opt/flu-amd/IRMA ~{module_irma} ~{trim_R1} ~{trim_R2} irma_res
 
         # determine if assemly was successful
         if compgen -G "irma_res/*.fasta"; then
